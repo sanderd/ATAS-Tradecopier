@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\GlobalUsings.cs" Link="GlobalUsings.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="ServiceWire" Version="5.6.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="ATAS.DataFeedsCore">
+			<HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath>
+		</Reference>
+		<Reference Include="ATAS.Indicators">
+			<HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.dll</HintPath>
+		</Reference>
+		<Reference Include="ATAS.Indicators.Technical">
+			<HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.Technical.dll</HintPath>
+		</Reference>
+		<Reference Include="OFT.Attributes">
+			<HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Attributes.dll</HintPath>
+		</Reference>
+		<Reference Include="OFT.Localization">
+			<HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Localization.dll</HintPath>
+		</Reference>
+		<Reference Include="Utils.Common">
+			<HintPath>C:\Program Files (x86)\ATAS Platform\Utils.Common.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+</Project>
