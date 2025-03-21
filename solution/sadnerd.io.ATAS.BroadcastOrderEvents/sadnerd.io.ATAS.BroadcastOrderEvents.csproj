@@ -21,13 +21,16 @@
 
 	<ItemGroup>
 		<Reference Include="ATAS.DataFeedsCore">
-			<HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath>
+		  <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath>
 		</Reference>
 		<Reference Include="ATAS.Indicators">
 			<HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.dll</HintPath>
 		</Reference>
 		<Reference Include="ATAS.Indicators.Technical">
 			<HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.Technical.dll</HintPath>
+		</Reference>
+		<Reference Include="ATAS.Strategies">
+		  <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Strategies.dll</HintPath>
 		</Reference>
 		<Reference Include="OFT.Attributes">
 			<HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Attributes.dll</HintPath>

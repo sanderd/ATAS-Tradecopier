@@ -1,11 +1,12 @@
-namespace sadnerd.io.ATAS.BroadcastOrderEvents.Contracts;
+
+namespace sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 
 public record NewOrderEventV1Message(
     string OrderAccountId,
     string OrderId,
-    //OrderTypes OrderType,
+    OrderType OrderType,
     decimal OrderPrice,
     decimal OrderQuantityToFill,
     string OrderSecurityId,
-    //OrderDirections OrderDirection,
+    OrderDirection OrderDirection,
     decimal OrderTriggerPrice);

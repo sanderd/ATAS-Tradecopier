@@ -1,8 +1,10 @@
 ﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts;
+using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
+using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
-public class MyServiceImplementation : IMyService
+public class OrderEventHubDispatchServiceImplementation : IOrderEventHubDispatchService
 {
     public void NewOrder(NewOrderEventV1Message newOrder)
     {
