@@ -18,30 +18,38 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         private bool _isStarted = false;
         private readonly IOrderToNewOrderEventV1MessageMapper _orderToNewOrderEventMapper;
         private readonly IOrderEventHubDispatchService _orderEventHubDispatchService;
+        private readonly IOrderToOrderChangedV1MessageMapper _orderToOrderChangedEventMapper;
+        private readonly IPositionToPositionChangedV1MessageMapper _positionToPositionChangedEventMapper;
+
+        private readonly IDictionary<string, decimal> _lastReportedPosition = new Dictionary<string, decimal>();
 
         // Added cuz ATAS and DI duh.
         public BroadcastOrderEventsStrategy() : this(
             orderToNewOrderEventMapper: new OrderToNewOrderEventV1MessageMapper(),
-            orderEventHubDispatchService:new ServiceWireClientOrderEventHubDispatchService(new IPEndPoint(IPAddress.Loopback, 12345))
+            orderEventHubDispatchService: new ServiceWireClientOrderEventHubDispatchService(new IPEndPoint(IPAddress.Loopback, 12345)), 
+            orderToOrderChangedEventMapper: new OrderToOrderChangedV1MessageMapper(),
+            positionToPositionChangedEventMapper: new PositionToPositionChangedV1MessageMapper()
         )
         {
         }
 
         public BroadcastOrderEventsStrategy(
             IOrderToNewOrderEventV1MessageMapper orderToNewOrderEventMapper,
-            IOrderEventHubDispatchService orderEventHubDispatchService
+            IOrderEventHubDispatchService orderEventHubDispatchService,
+            IOrderToOrderChangedV1MessageMapper orderToOrderChangedEventMapper,
+            IPositionToPositionChangedV1MessageMapper positionToPositionChangedEventMapper
         )
         {
             _orderToNewOrderEventMapper = orderToNewOrderEventMapper;
             _orderEventHubDispatchService = orderEventHubDispatchService;
+            _orderToOrderChangedEventMapper = orderToOrderChangedEventMapper;
+            _positionToPositionChangedEventMapper = positionToPositionChangedEventMapper;
         }
 
         protected override void OnNewOrder(Order order)
         {
             if (!_isStarted) return;
             
-            this.LogWarn("OnNewOrder: " + order);
-
             var mappedMessage = _orderToNewOrderEventMapper.Map(order);
             _orderEventHubDispatchService.NewOrder(mappedMessage);
         }
@@ -50,7 +58,8 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             if (!_isStarted) return;
             
-            this.LogWarn("OnOrderChanged: " + order.ToString());
+            var mappedMessage = _orderToOrderChangedEventMapper.Map(order);
+            _orderEventHubDispatchService.OrderChanged(mappedMessage);
         }
 
         //protected override void OnNewMyTrade(MyTrade myTrade)
@@ -63,10 +72,28 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         //    this.LogWarn("OnPortfolioChanged: " + portfolio.ToString());
         //}
 
-        //protected override void OnPositionChanged(Position position)
-        //{
-        //    this.LogWarn("OnPositionChanged: " + position.ToString());
-        //}
+        protected override void OnPositionChanged(Position position)
+        {
+            if (!_isStarted) return;
+            
+            bool report = false;
+            if (!_lastReportedPosition.ContainsKey(position.SecurityId))
+            {
+                _lastReportedPosition.Add(position.SecurityId, position.Volume);
+                report = true;
+            } else if (_lastReportedPosition[position.SecurityId] != position.Volume)
+            {
+                _lastReportedPosition[position.SecurityId] = position.Volume;
+                report = true;
+            }
+
+            if (report)
+            {
+                var mappedMessage = _positionToPositionChangedEventMapper.Map(position);
+                _orderEventHubDispatchService.PositionChanged(mappedMessage);
+            }
+        }
+
         protected override void OnCalculate(int bar, decimal value)
         {
         }
@@ -88,6 +115,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         protected override void OnStopping()
         {
             _isStarted = false;
+            _lastReportedPosition.Clear();
 
             base.OnStopping();
         }

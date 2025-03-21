@@ -1,5 +1,4 @@
-﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts;
-using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
+﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
@@ -11,8 +10,13 @@ public class OrderEventHubDispatchServiceImplementation : IOrderEventHubDispatch
         Console.WriteLine("NewOrder: " + message.ToString());
     }
 
-    public void NewOrder(bool test)
+    public void OrderChanged(OrderChangedV1Message message)
     {
-        Console.WriteLine("neworder" + test.ToString());
+        Console.WriteLine("OrderChanged: " + message.ToString());
+    }
+
+    public void PositionChanged(PositionChangedV1Message message)
+    {
+        Console.WriteLine("PositionChanged: " + message.ToString());
     }
 }

@@ -1,7 +1,6 @@
-
 namespace sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 
-public record NewOrderEventV1Message(
+public record OrderChangedV1Message(
     string OrderAccountId,
     string OrderId,
     OrderType OrderType,

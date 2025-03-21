@@ -21,4 +21,16 @@ public class ServiceWireClientOrderEventHubDispatchService : IOrderEventHubDispa
         using var client = new TcpClient<IOrderEventHubDispatchService>(_ipEndpoint);
         client.Proxy.NewOrder(message);
     }
+
+    public void OrderChanged(OrderChangedV1Message message)
+    {
+        using var client = new TcpClient<IOrderEventHubDispatchService>(_ipEndpoint);
+        client.Proxy.OrderChanged(message);
+    }
+
+    public void PositionChanged(PositionChangedV1Message message)
+    {
+        using var client = new TcpClient<IOrderEventHubDispatchService>(_ipEndpoint);
+        client.Proxy.PositionChanged(message);
+    }
 }

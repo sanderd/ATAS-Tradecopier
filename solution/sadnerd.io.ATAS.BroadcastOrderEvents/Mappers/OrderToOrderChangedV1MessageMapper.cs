@@ -3,11 +3,11 @@ using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 
 namespace sadnerd.io.ATAS.BroadcastOrderEvents.Mappers;
 
-public class OrderToNewOrderEventV1MessageMapper : IOrderToNewOrderEventV1MessageMapper
+public class OrderToOrderChangedV1MessageMapper : IOrderToOrderChangedV1MessageMapper
 {
-    public NewOrderEventV1Message Map(Order order)
+    public OrderChangedV1Message Map(Order order)
     {
-        return new NewOrderEventV1Message(
+        return new OrderChangedV1Message(
             OrderAccountId: order.AccountID,
             OrderId: order.Id,
             OrderType: OrderTypesToOrderTypeMapper.Map(order.Type),
