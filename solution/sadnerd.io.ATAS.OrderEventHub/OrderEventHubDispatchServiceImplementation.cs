@@ -6,9 +6,9 @@ namespace sadnerd.io.ATAS.OrderEventHub;
 
 public class OrderEventHubDispatchServiceImplementation : IOrderEventHubDispatchService
 {
-    public void NewOrder(NewOrderEventV1Message newOrder)
+    public void NewOrder(NewOrderEventV1Message message)
     {
-        Console.WriteLine("NewOrder: " + newOrder.ToString());
+        Console.WriteLine("NewOrder: " + message.ToString());
     }
 
     public void NewOrder(bool test)

@@ -4,5 +4,5 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 
 public interface IOrderEventHubDispatchService
 {
-    void NewOrder(NewOrderEventV1Message newOrder);
+    void NewOrder(NewOrderEventV1Message message);
 }

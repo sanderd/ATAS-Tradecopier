@@ -2,7 +2,6 @@ using ATAS.DataFeedsCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using OFT.Attributes;
-using ServiceWire.TcpIp;
 using Utils.Common.Logging;
 using System.Net;
 using ATAS.Strategies.Chart;
@@ -13,26 +12,28 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 {
     [DisplayName("Broadcast Order Events")]
     [Display(Name = "Broadcast Order Events", Description = "Broadcast Order Events")]
-    [HelpLink("https://github.com/sanderd/ATAS-Indicators/wiki/HTF-Candles")]
+    [HelpLink("https://github.com/sanderd/ATAS-Indicators")]
     public class BroadcastOrderEventsStrategy : ChartStrategy
     {
         private bool _isStarted = false;
-        private IOrderToNewOrderEventV1MessageMapper _orderToNewOrderEventMapper;
+        private readonly IOrderToNewOrderEventV1MessageMapper _orderToNewOrderEventMapper;
+        private readonly IOrderEventHubDispatchService _orderEventHubDispatchService;
 
         // Added cuz ATAS and DI duh.
         public BroadcastOrderEventsStrategy() : this(
-            orderToNewOrderEventMapper: new OrderToNewOrderEventV1MessageMapper()
+            orderToNewOrderEventMapper: new OrderToNewOrderEventV1MessageMapper(),
+            orderEventHubDispatchService:new ServiceWireClientOrderEventHubDispatchService(new IPEndPoint(IPAddress.Loopback, 12345))
         )
         {
         }
 
         public BroadcastOrderEventsStrategy(
-            IOrderToNewOrderEventV1MessageMapper orderToNewOrderEventMapper
+            IOrderToNewOrderEventV1MessageMapper orderToNewOrderEventMapper,
+            IOrderEventHubDispatchService orderEventHubDispatchService
         )
         {
             _orderToNewOrderEventMapper = orderToNewOrderEventMapper;
-
-            // TODO: Configuration / extract to service
+            _orderEventHubDispatchService = orderEventHubDispatchService;
         }
 
         protected override void OnNewOrder(Order order)
@@ -41,12 +42,8 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             
             this.LogWarn("OnNewOrder: " + order);
 
-            var ipEndpoint = new IPEndPoint(IPAddress.Loopback, 12345);
-            using (var client = new TcpClient<IOrderEventHubDispatchService>(ipEndpoint))
-            {
-                var mappedMessage = _orderToNewOrderEventMapper.Map(order);
-                client.Proxy.NewOrder(mappedMessage);
-            }
+            var mappedMessage = _orderToNewOrderEventMapper.Map(order);
+            _orderEventHubDispatchService.NewOrder(mappedMessage);
         }
 
         protected override void OnOrderChanged(Order order)
