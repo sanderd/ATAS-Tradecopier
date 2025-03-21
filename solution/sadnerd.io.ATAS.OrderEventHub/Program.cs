@@ -1,15 +1,21 @@
-﻿// See https://aka.ms/new-console-template for more information
-using ServiceWire.TcpIp;
-using System.Net;
-using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts;
-using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
-using sadnerd.io.ATAS.OrderEventHub;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
-var ipEndpoint = new IPEndPoint(IPAddress.Loopback, 12345);
-var tcphost = new TcpHost(ipEndpoint);
-tcphost.AddService<IOrderEventHubDispatchService>(new OrderEventHubDispatchServiceImplementation());
-tcphost.Open();
+namespace sadnerd.io.ATAS.OrderEventHub
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
 
-
-Console.WriteLine("Hello, World!");
-await Task.Delay(Timeout.Infinite);
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host
+                .CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+    }
+}
