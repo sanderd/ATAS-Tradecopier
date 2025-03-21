@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
@@ -17,6 +18,8 @@ public class Startup
         services.AddSignalR();
         services.AddHostedService<ServiceWireWorker>();
         services.AddCors();
+
+        services.AddSingleton<IOrderEventHubDispatchService, LoggingOrderEventHubDispatchService>();
     }
 
     public void Configure(IApplicationBuilder app)
