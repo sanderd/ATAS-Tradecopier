@@ -21,6 +21,11 @@ public class Startup
         services.AddCors();
 
         services.AddSingleton<IOrderEventHubDispatchService, LoggingOrderEventHubDispatchService>();
+
+        // Add integration event bus
+        services.AddHostedService<IntegrationEventProcessorJob>();
+        services.AddSingleton<InMemoryMessageQueue>();
+        services.AddSingleton<IEventBus, EventBus>();
     }
 
     public void Configure(IApplicationBuilder app)
