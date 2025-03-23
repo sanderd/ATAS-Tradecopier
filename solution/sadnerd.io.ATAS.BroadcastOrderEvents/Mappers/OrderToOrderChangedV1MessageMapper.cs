@@ -15,7 +15,8 @@ public class OrderToOrderChangedV1MessageMapper : IOrderToOrderChangedV1MessageM
             OrderQuantityToFill: order.QuantityToFill,
             OrderSecurityId: order.SecurityId,
             OrderDirection: OrderDirectionsToOrderDirectionMapper.Map(order.Direction),
-            OrderTriggerPrice: order.TriggerPrice
+            OrderTriggerPrice: order.TriggerPrice,
+            OrderStatus: OrderStatesToOrderStatusMapper.Map(order.State)
         );
     }
 }

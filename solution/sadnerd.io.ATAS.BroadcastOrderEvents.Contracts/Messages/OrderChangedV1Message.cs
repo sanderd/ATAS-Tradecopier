@@ -8,5 +8,5 @@ public record OrderChangedV1Message(
     decimal OrderQuantityToFill,
     string OrderSecurityId,
     OrderDirection OrderDirection,
-    decimal OrderTriggerPrice
-);
+    decimal OrderTriggerPrice,
+    OrderStatus OrderStatus);
