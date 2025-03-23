@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using ServiceWire.TcpIp;
 
-namespace sadnerd.io.ATAS.OrderEventHub;
+namespace sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 
 public class ServiceWireWorker : BackgroundService
 {

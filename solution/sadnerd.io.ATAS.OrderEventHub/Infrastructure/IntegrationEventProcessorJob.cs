@@ -31,7 +31,8 @@ internal sealed class IntegrationEventProcessorJob(
                 logger.LogError(
                     ex,
                     "Something went wrong!",
-                    integrationEvent);
+                    integrationEvent
+                );
             }
         }
     }

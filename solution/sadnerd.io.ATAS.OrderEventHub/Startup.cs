@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
+using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
@@ -20,7 +21,8 @@ public class Startup
         services.AddHostedService<ServiceWireWorker>();
         services.AddCors();
 
-        services.AddSingleton<IOrderEventHubDispatchService, LoggingOrderEventHubDispatchService>();
+        services.AddSingleton<IOrderEventHubDispatchService, EventBusPassthroughEventHubDispatchService>();
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Startup>());
 
         // Add integration event bus
         services.AddHostedService<IntegrationEventProcessorJob>();

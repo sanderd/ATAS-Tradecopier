@@ -8,5 +8,4 @@ public class SignalRTopstepAutomationHub : Hub
     {
         //Clients.All.Send(name, message);
     }
-
 }
