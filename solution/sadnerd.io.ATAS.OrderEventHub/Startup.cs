@@ -32,9 +32,8 @@ public class Startup
     {
         app.UseCors(builder =>
         {
-            builder.AllowAnyHeader();
-            builder.AllowAnyMethod();
-            builder.AllowAnyOrigin();
+            builder.WithOrigins("https://www.youtube.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+            builder.WithOrigins("https://www.topstepx.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
         });
 
         app.UseRouting();
