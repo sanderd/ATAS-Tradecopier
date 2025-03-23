@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
+using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
@@ -34,7 +35,7 @@ public class Startup
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            //endpoints.MapHub<MessageHub>("/messageHub");
+            endpoints.MapHub<SignalRTopstepAutomationHub>("/topstepxhub");
         });
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using ServiceWire.TcpIp;
 
@@ -12,7 +11,6 @@ public class ServiceWireWorker : BackgroundService
     private TcpHost _tcphost;
 
     public ServiceWireWorker(
-        ILogger<ServiceWireWorker> logger,
         IOrderEventHubDispatchService orderEventHubDispatchService
     )
     {
@@ -23,7 +21,7 @@ public class ServiceWireWorker : BackgroundService
     {
         var ipEndpoint = new IPEndPoint(IPAddress.Loopback, 12345);
         _tcphost = new TcpHost(ipEndpoint);
-        _tcphost.AddService<IOrderEventHubDispatchService>(_orderEventHubDispatchService);
+        _tcphost.AddService(_orderEventHubDispatchService);
         _tcphost.Open();
 
         stoppingToken.Register(() =>
