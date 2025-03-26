@@ -1,6 +1,8 @@
-﻿namespace sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+﻿using MediatR;
 
-public abstract class GenericOrderEvent<T>
+namespace sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+
+public abstract class GenericOrderEvent<T> : IRequest
 {
     protected GenericOrderEvent(T message)
     {
