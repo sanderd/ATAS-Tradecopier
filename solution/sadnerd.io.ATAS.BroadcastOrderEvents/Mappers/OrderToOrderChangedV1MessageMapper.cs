@@ -8,15 +8,19 @@ public class OrderToOrderChangedV1MessageMapper : IOrderToOrderChangedV1MessageM
     public OrderChangedV1Message Map(Order order)
     {
         return new OrderChangedV1Message(
-            OrderAccountId: order.AccountID,
+            AccountId: order.AccountID,
             OrderId: order.Id,
-            OrderType: OrderTypesToOrderTypeMapper.Map(order.Type),
-            OrderPrice: order.Price,
-            OrderQuantityToFill: order.QuantityToFill,
-            OrderSecurityId: order.SecurityId,
-            OrderDirection: OrderDirectionsToOrderDirectionMapper.Map(order.Direction),
-            OrderTriggerPrice: order.TriggerPrice,
-            OrderStatus: OrderStatesToOrderStatusMapper.Map(order.State)
+            Type: OrderTypesToOrderTypeMapper.Map(order.Type),
+            Price: order.Price,
+            OriginalQuantity: order.QuantityToFill,
+            UnfilledQuantity: order.Unfilled,
+            SecurityId: order.SecurityId,
+            Direction: OrderDirectionsToOrderDirectionMapper.Map(order.Direction),
+            TriggerPrice: order.TriggerPrice,
+            Status: OrderStatesToOrderStatusMapper.Map(order.State),
+            Canceled: order.Canceled,
+            IsReduceOnly: order.ExtendedOptions?.ToString().Contains("ReduceOnly") == true, // NOTE: Yeah... Didn't find a way to access the flags directly...
+            Comment: order.Comment
         );
     }
 }

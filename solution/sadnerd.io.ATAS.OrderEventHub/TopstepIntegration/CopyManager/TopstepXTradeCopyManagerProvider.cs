@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
@@ -35,7 +33,7 @@ public class TopstepXTradeCopyManagerProvider
                 throw new ArgumentException("Already exists");
             }
 
-            _managers.Add((atasAccountId, instrument, topstepAccount, topstepInstrument, new TopstepXTradeCopyManager(_serviceScope.ServiceProvider.GetRequiredService<ITopstepBrowserAutomationClient>())));
+            _managers.Add((atasAccountId, instrument, topstepAccount, topstepInstrument, ActivatorUtilities.CreateInstance<TopstepXTradeCopyManager>(_serviceScope.ServiceProvider)));
         }
     }
 

@@ -15,7 +15,9 @@ public class OrderToNewOrderEventV1MessageMapper : IOrderToNewOrderEventV1Messag
             OrderQuantityToFill: order.QuantityToFill,
             OrderSecurityId: order.SecurityId,
             OrderDirection: OrderDirectionsToOrderDirectionMapper.Map(order.Direction),
-            OrderTriggerPrice: order.TriggerPrice
+            OrderTriggerPrice: order.TriggerPrice,
+            IsReduceOnly: order.IsReduceOnly(),
+            Comment: order.Comment
         );
     }
 }

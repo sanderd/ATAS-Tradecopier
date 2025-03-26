@@ -1,12 +1,16 @@
 namespace sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 
 public record OrderChangedV1Message(
-    string OrderAccountId,
+    string AccountId,
     string OrderId,
-    OrderType OrderType,
-    decimal OrderPrice,
-    decimal OrderQuantityToFill,
-    string OrderSecurityId,
-    OrderDirection OrderDirection,
-    decimal OrderTriggerPrice,
-    OrderStatus OrderStatus);
+    OrderType Type,
+    decimal Price,
+    decimal OriginalQuantity,
+    decimal UnfilledQuantity,
+    string SecurityId,
+    OrderDirection Direction,
+    decimal TriggerPrice,
+    OrderStatus Status,
+    bool Canceled,
+    bool IsReduceOnly,
+    string? Comment);

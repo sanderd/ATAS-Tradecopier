@@ -20,7 +20,7 @@ public static class OrderTypesToOrderTypeMapper
             case OrderTypes.Unknown:
                 return OrderType.Unknown;
             default:
-                throw new ArgumentOutOfRangeException(nameof(orderType), orderType, "OrderType is not supported");
+                throw new ArgumentOutOfRangeException(nameof(orderType), orderType, "Type is not supported");
         }
     }
 }

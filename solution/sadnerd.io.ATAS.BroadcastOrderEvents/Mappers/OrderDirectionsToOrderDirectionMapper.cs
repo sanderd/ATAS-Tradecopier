@@ -13,7 +13,7 @@ public static class OrderDirectionsToOrderDirectionMapper {
             case OrderDirections.Sell:
                 return OrderDirection.Sell;
             default:
-                throw new ArgumentOutOfRangeException(nameof(orderDirection), orderDirection, "OrderDirection is not supported");
+                throw new ArgumentOutOfRangeException(nameof(orderDirection), orderDirection, "Direction is not supported");
         }
     }
 }

@@ -9,5 +9,7 @@ public record NewOrderEventV1Message(
     decimal OrderQuantityToFill,
     string OrderSecurityId,
     OrderDirection OrderDirection,
-    decimal OrderTriggerPrice
+    decimal OrderTriggerPrice,
+    bool IsReduceOnly,
+    string? Comment
 );

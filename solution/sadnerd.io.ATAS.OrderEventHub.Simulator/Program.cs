@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts;
 using ServiceWire.TcpIp;
 using System.Net;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
@@ -22,7 +21,9 @@ using (var client = new TcpClient<IOrderEventHubDispatchService>(ipEndpoint))
         OrderQuantityToFill: 123,
         OrderSecurityId: "test",
         OrderDirection: OrderDirection.Buy,
-        OrderTriggerPrice: 123
+        OrderTriggerPrice: 123,
+        IsReduceOnly:false,
+        Comment:null
     );
 
     client.Proxy.NewOrder(message);

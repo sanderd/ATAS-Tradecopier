@@ -19,7 +19,7 @@ public class NewOrderCommandHandler : INotificationHandler<NewOrderEvent>
         _tradeCopyManager = tradeCopyManager;
         _logger = logger;
     }
-
+     
     public async Task Handle(NewOrderEvent request, CancellationToken cancellationToken)
     {
         var instrument = request.Message.OrderSecurityId.Split('@')[0];
@@ -35,11 +35,20 @@ public class NewOrderCommandHandler : INotificationHandler<NewOrderEvent>
         {
             switch (request.Message.OrderType)
             {
-                case OrderType.Limit:
+                case OrderType.Limit when !request.Message.IsReduceOnly:
                     await copyManager.CreateLimitOrder(request.Message.OrderId, request.Message.OrderDirection, request.Message.OrderPrice, request.Message.OrderQuantityToFill);
+                    break;
+                case OrderType.Limit when request.Message.IsReduceOnly:
+                    await copyManager.SetTakeProfit(request.Message.OrderId, request.Message.OrderPrice);
                     break;
                 case OrderType.Market:
                     await copyManager.CreateMarketOrder(request.Message.OrderId, request.Message.OrderDirection, request.Message.OrderQuantityToFill);
+                    break;
+                case OrderType.Stop when !request.Message.IsReduceOnly:
+                    await copyManager.CreateStopOrder(request.Message.OrderId, request.Message.OrderDirection, request.Message.OrderTriggerPrice, request.Message.OrderQuantityToFill);
+                    break;
+                case OrderType.Stop when request.Message.IsReduceOnly:
+                    await copyManager.SetStopLoss(request.Message.OrderId, request.Message.OrderTriggerPrice);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

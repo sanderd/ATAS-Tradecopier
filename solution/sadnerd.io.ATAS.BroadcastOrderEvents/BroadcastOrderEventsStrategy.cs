@@ -2,7 +2,6 @@ using ATAS.DataFeedsCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using OFT.Attributes;
-using Utils.Common.Logging;
 using System.Net;
 using ATAS.Strategies.Chart;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
