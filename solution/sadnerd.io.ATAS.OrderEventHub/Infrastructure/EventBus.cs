@@ -21,7 +21,7 @@ internal sealed class EventBus : IEventBus
         CancellationToken cancellationToken = default)
         where T : class, IIntegrationEvent
     {
-        _logger.LogDebug("Received eventbus event: {0}", JsonConvert.SerializeObject(integrationEvent));
+        _logger.LogInformation("Received eventbus event: {type} {event}", typeof(T).Name, JsonConvert.SerializeObject(integrationEvent));
         await _queue.Writer.WriteAsync(integrationEvent, cancellationToken);
     }
 }

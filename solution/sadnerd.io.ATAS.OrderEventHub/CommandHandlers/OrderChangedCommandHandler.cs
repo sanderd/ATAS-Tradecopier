@@ -37,13 +37,17 @@ public class OrderChangedCommandHandler : INotificationHandler<OrderChangedEvent
         {
             switch (request.Message.Status)
             {
-                case OrderStatus.Done when request.Message.Canceled && (!request.Message.IsReduceOnly && request.Message.Comment != "TP" && request.Message.Comment != "SL"):
-                    _logger.LogInformation("cancelling " + JsonConvert.SerializeObject(request.Message));
+                case OrderStatus.Done when request.Message.Canceled && (!OrderHelper.IsTakeProfit(request.Message.Comment, request.Message.IsReduceOnly) && !OrderHelper.IsStopLoss(request.Message.Comment, request.Message.IsReduceOnly)):
                     await copyManager.CancelOrder(request.Message.OrderId);
+                    break;
+                case OrderStatus.Done when !request.Message.Canceled && OrderHelper.IsStopLoss(request.Message.Comment, request.Message.IsReduceOnly) && request.Message.UnfilledQuantity == 0:
+                    await copyManager.FlattenPosition();
+                    break;
+                case OrderStatus.Done when !request.Message.Canceled && OrderHelper.IsTakeProfit(request.Message.Comment, request.Message.IsReduceOnly) && request.Message.UnfilledQuantity == 0:
+                    await copyManager.FlattenPosition();
                     break;
                 default:
                     _logger.LogInformation("Order changed event ignored");
-                    _logger.LogInformation(JsonConvert.SerializeObject(request));
                     break;
             }
         }

@@ -109,4 +109,17 @@ public class TopstepXTradeCopyManager
             return;
         }
     }
+
+    public async Task FlattenPosition()
+    {
+        if (_connectionId == null || _errorState) return;
+        var result = await _topstepBrowserAutomationClient.Flatten(_connectionId);
+
+        if (!result.Success)
+        {
+            _errorState = true;
+            _logger.LogCritical("error flattening position");
+            return;
+        }
+    }
 }

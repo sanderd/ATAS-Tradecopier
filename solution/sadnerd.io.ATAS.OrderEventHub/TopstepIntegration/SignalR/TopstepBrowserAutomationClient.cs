@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR.Models;
+using System.Runtime.CompilerServices;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 
@@ -45,6 +46,12 @@ public class TopstepBrowserAutomationClient : ITopstepBrowserAutomationClient
     public async Task<StopOrderCreationResult> CreateStopOrder(string connectionId, bool isLong, decimal orderPrice, int orderQuantity)
     {
         var result = await _hubContext.Clients.Client(connectionId)?.InvokeAsync<StopOrderCreationResult>("CreateStopOrder", isLong, orderPrice, orderQuantity, CancellationToken.None);
+        return result;
+    }
+
+    public async Task<FlattenResult> Flatten(string connectionId)
+    {
+        var result = await _hubContext.Clients.Client(connectionId)?.InvokeAsync<FlattenResult>("Flatten", CancellationToken.None);
         return result;
     }
 }

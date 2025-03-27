@@ -10,4 +10,5 @@ public interface ITopstepBrowserAutomationClient
     Task<SetTakeProfitResult> SetTakeProfit(string connectionId, decimal orderPrice);
     Task<SetStopLossResult> SetStopLoss(string connectionId, decimal orderPrice);
     Task<StopOrderCreationResult> CreateStopOrder(string connectionId, bool isLong, decimal orderPrice, int orderQuantity);
+    Task<FlattenResult> Flatten(string connectionId);
 }
