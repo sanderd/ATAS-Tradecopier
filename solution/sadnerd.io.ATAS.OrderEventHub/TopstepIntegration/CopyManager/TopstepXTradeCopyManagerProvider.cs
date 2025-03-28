@@ -4,13 +4,10 @@ namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
 public class TopstepXTradeCopyManagerProvider
 {
-    private readonly IServiceScope _serviceScope;
     private List<(string atasAccountId, string instrument, string topstepAccountId, string topstepInstrument, TopstepXTradeCopyManager manager)> _managers;
-    private SemaphoreSlim _managerSemaphore = new SemaphoreSlim(1);
 
-    public TopstepXTradeCopyManagerProvider(IServiceScope serviceScope)
+    public TopstepXTradeCopyManagerProvider()
     {
-        _serviceScope = serviceScope;
         _managers = new List<(string atasAccountId, string instrument, string topstepAccountId, string topstepInstrument, TopstepXTradeCopyManager manager)>();
     }
 
@@ -19,7 +16,7 @@ public class TopstepXTradeCopyManagerProvider
         return _managers.Where(m => m.atasAccountId == atasAccountId && m.instrument == instrument).Select(m => m.manager);
     }
 
-    public void AddManager(string atasAccountId, string instrument, string topstepAccount, string topstepInstrument)
+    public void AddManager(string atasAccountId, string instrument, string topstepAccount, string topstepInstrument, TopstepXTradeCopyManager copyManager)
     {
         if (_managers.Any(x => x.instrument == instrument && x.atasAccountId == atasAccountId && x.topstepAccountId == topstepAccount))
         {
@@ -33,7 +30,7 @@ public class TopstepXTradeCopyManagerProvider
                 throw new ArgumentException("Already exists");
             }
 
-            _managers.Add((atasAccountId, instrument, topstepAccount, topstepInstrument, ActivatorUtilities.CreateInstance<TopstepXTradeCopyManager>(_serviceScope.ServiceProvider)));
+            _managers.Add((atasAccountId, instrument, topstepAccount, topstepInstrument, copyManager));
         }
     }
 

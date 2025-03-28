@@ -34,8 +34,11 @@ public class Startup
 
         services.AddSingleton<TopstepXTradeCopyManagerProvider>(sp =>
         {
-            var manager = new TopstepXTradeCopyManagerProvider(sp.CreateScope());
-            // manager.AddManager("DEMOATAS", "MNQM5", "TOPSTEPXACCOUNT", "MNQM25");
+            var manager = new TopstepXTradeCopyManagerProvider();
+            manager.AddManager(
+                "DEMOATAS", "MNQM5", "TOPSTEPXACCOUNT", "MNQM25",
+                new TopstepXTradeCopyManager(sp.GetRequiredService<ITopstepBrowserAutomationClient>(), sp.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), 2)
+            );
             return manager;
         });
     }

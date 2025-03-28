@@ -9,6 +9,7 @@ public class TopstepXTradeCopyManager
 {
     private readonly ITopstepBrowserAutomationClient _topstepBrowserAutomationClient;
     private readonly ILogger<TopstepXTradeCopyManager> _logger;
+    private readonly int _contractMultiplier;
     private string? _connectionId = null;
     private List<(string AtasOrderId, string TopstepOrderId)> _orderMap = new();
     private bool _errorState = false;
@@ -16,11 +17,13 @@ public class TopstepXTradeCopyManager
 
     public TopstepXTradeCopyManager(
         ITopstepBrowserAutomationClient topstepBrowserAutomationClient,
-        ILogger<TopstepXTradeCopyManager> logger
+        ILogger<TopstepXTradeCopyManager> logger,
+        int contractMultiplier
     )
     {
         _topstepBrowserAutomationClient = topstepBrowserAutomationClient;
         _logger = logger;
+        _contractMultiplier = contractMultiplier;
     }
 
     public void SetConnectionId(string connectionId)
@@ -51,12 +54,12 @@ public class TopstepXTradeCopyManager
     public async Task CreateLimitOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity)
     {
         if (_connectionId == null || _errorState) return;
-        var result = await _topstepBrowserAutomationClient.CreateLimitOrder(_connectionId, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity);
+        var result = await _topstepBrowserAutomationClient.CreateLimitOrder(_connectionId, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
 
         if (!result.Success)
         {
             _errorState = true;
-            _logger.LogCritical("error creating limit order {atasOrderId} ({direction}), {orderprice}, {quantity}", atasOrderId, orderDirection, orderPrice, orderQuantity);
+            _logger.LogCritical("error creating limit order {atasOrderId} ({direction}), {orderprice}, {quantity}", atasOrderId, orderDirection, orderPrice, orderQuantity * _contractMultiplier);
             return;
         }
 
@@ -66,7 +69,7 @@ public class TopstepXTradeCopyManager
     public async Task CreateMarketOrder(string atasOrderId, OrderDirection orderDirection, decimal orderQuantity)
     {
         if (_connectionId == null || _errorState) return;
-        var result = await _topstepBrowserAutomationClient.CreateMarketOrder(_connectionId, orderDirection == OrderDirection.Buy ? true : false, (int)orderQuantity);
+        var result = await _topstepBrowserAutomationClient.CreateMarketOrder(_connectionId, orderDirection == OrderDirection.Buy ? true : false, (int)orderQuantity * _contractMultiplier);
     }
 
     public async Task SetTakeProfit(string atasOrderId, decimal orderPrice)
@@ -85,7 +88,7 @@ public class TopstepXTradeCopyManager
     public async Task CreateStopOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity)
     {
         if (_connectionId == null || _errorState) return;
-        var result = await _topstepBrowserAutomationClient.CreateStopOrder(_connectionId, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity);
+        var result = await _topstepBrowserAutomationClient.CreateStopOrder(_connectionId, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
 
         if (!result.Success)
         {
