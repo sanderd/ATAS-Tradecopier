@@ -1,0 +1,15 @@
+﻿@page
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.AtasAccounts.CreateModel
+@{
+    ViewData["Title"] = "Add Atas Account";
+}
+
+<h1>Add Atas Account</h1>
+
+<form method="post">
+    <div class="form-group">
+        <label for="AtasAccountId">Atas Account ID</label>
+        <input type="text" class="form-control" id="AtasAccountId" name="AtasAccount.AtasAccountId" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>

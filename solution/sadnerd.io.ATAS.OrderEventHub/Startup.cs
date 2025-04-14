@@ -1,4 +1,5 @@
 ﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
+using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
@@ -42,7 +43,8 @@ public class Startup
         });
 
         services.AddControllersWithViews();
-
+        services.AddRazorPages();
+        services.AddDbContext<TradeCopyContext>();
     }
 
     public void Configure(IApplicationBuilder app)
@@ -63,6 +65,8 @@ public class Startup
             endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            endpoints.MapRazorPages();
         });
 
         app.UseAuthorization();
