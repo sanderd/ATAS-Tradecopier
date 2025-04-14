@@ -21,6 +21,7 @@ public class Startup
     {
         services.AddSignalR();
         services.AddHostedService<ServiceWireWorker>();
+        services.AddHostedService<SbeImplementationBackgroundService>();
         services.AddCors();
 
         services.AddSingleton<IOrderEventHubDispatchService, EventBusPassthroughEventHubDispatchService>();
@@ -40,6 +41,14 @@ public class Startup
                 new TopstepXTradeCopyManager(sp.GetRequiredService<ITopstepBrowserAutomationClient>(), sp.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), 2)
             );
             return manager;
+        });
+
+        services.AddLogging(opt =>
+        {
+            opt.AddConsole(c =>
+            {
+                c.TimestampFormat = "[HH:mm:ss] ";
+            });
         });
     }
 
