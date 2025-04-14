@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-
-namespace sadnerd.io.ATAS.OrderEventHub
+﻿namespace sadnerd.io.ATAS.OrderEventHub
 {
     class Program
     {

@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
+﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
@@ -12,6 +9,7 @@ namespace sadnerd.io.ATAS.OrderEventHub;
 public class Startup
 {
     public IConfiguration Configuration { get; }
+
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
@@ -37,10 +35,14 @@ public class Startup
             var manager = new TopstepXTradeCopyManagerProvider();
             manager.AddManager(
                 "DEMOATAS", "MNQM5", "TOPSTEPXACCOUNT", "MNQM25",
-                new TopstepXTradeCopyManager(sp.GetRequiredService<ITopstepBrowserAutomationClient>(), sp.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), 2)
+                new TopstepXTradeCopyManager(sp.GetRequiredService<ITopstepBrowserAutomationClient>(),
+                    sp.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), 2)
             );
             return manager;
         });
+
+        services.AddControllersWithViews();
+
     }
 
     public void Configure(IApplicationBuilder app)
@@ -48,13 +50,21 @@ public class Startup
         app.UseCors(builder =>
         {
             builder.WithOrigins("https://www.youtube.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-            builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+            builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com").AllowAnyMethod().AllowAnyHeader()
+                .AllowCredentials();
         });
 
+        app.UseStaticFiles();
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<SignalRTopstepAutomationHub>("/topstepxhub");
+
+            endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
         });
+
+        app.UseAuthorization();
     }
 }
