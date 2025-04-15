@@ -51,10 +51,20 @@ public class CopyStrategyService
             throw new KeyNotFoundException($"CopyStrategy with ID {strategyId} not found.");
         }
 
+        // Capture the original data before deletion
+        var deletedEvent = new CopyStrategyDeletedEvent(
+            strategy.Id,
+            strategy.AtasAccountId,
+            strategy.TopstepAccountId,
+            strategy.AtasContract,
+            strategy.TopstepContract,
+            strategy.ContractMultiplier
+        );
+
         _context.CopyStrategies.Remove(strategy);
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Publish the deletion event
-        await _mediator.Publish(new CopyStrategyDeletedEvent(strategyId), CancellationToken.None);
+        // Publish the deletion event with the original data
+        await _mediator.Publish(deletedEvent, CancellationToken.None);
     }
 }

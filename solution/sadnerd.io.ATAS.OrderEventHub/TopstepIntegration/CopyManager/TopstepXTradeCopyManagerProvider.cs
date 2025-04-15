@@ -1,13 +1,16 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
 public class TopstepXTradeCopyManagerProvider
 {
+    private readonly IServiceProvider _serviceProvider;
     private List<(string atasAccountId, string instrument, string topstepAccountId, string topstepInstrument, TopstepXTradeCopyManager manager)> _managers;
 
-    public TopstepXTradeCopyManagerProvider()
+    public TopstepXTradeCopyManagerProvider(IServiceProvider serviceProvider)
     {
+        _serviceProvider = serviceProvider;
         _managers = new List<(string atasAccountId, string instrument, string topstepAccountId, string topstepInstrument, TopstepXTradeCopyManager manager)>();
     }
 
@@ -16,7 +19,7 @@ public class TopstepXTradeCopyManagerProvider
         return _managers.Where(m => m.atasAccountId == atasAccountId && m.instrument == instrument).Select(m => m.manager);
     }
 
-    public void AddManager(string atasAccountId, string instrument, string topstepAccount, string topstepInstrument, TopstepXTradeCopyManager copyManager)
+    public void AddManager(string atasAccountId, string instrument, string topstepAccount, string topstepInstrument, int contractMultiplier)
     {
         if (_managers.Any(x => x.instrument == instrument && x.atasAccountId == atasAccountId && x.topstepAccountId == topstepAccount))
         {
@@ -30,7 +33,8 @@ public class TopstepXTradeCopyManagerProvider
                 throw new ArgumentException("Already exists");
             }
 
-            _managers.Add((atasAccountId, instrument, topstepAccount, topstepInstrument, copyManager));
+            var manager = new TopstepXTradeCopyManager(_serviceProvider.GetRequiredService<ITopstepBrowserAutomationClient>(), _serviceProvider.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), contractMultiplier);
+            _managers.Add((atasAccountId, instrument, topstepAccount, topstepInstrument, manager));
         }
     }
 

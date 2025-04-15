@@ -3,6 +3,7 @@ using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
+using sadnerd.io.ATAS.OrderEventHub.Services;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 
@@ -21,6 +22,7 @@ public class Startup
     {
         services.AddSignalR();
         services.AddHostedService<ServiceWireWorker>();
+        services.AddHostedService<CopyStrategyInitializationService>();
         services.AddCors();
 
         services.AddSingleton<IOrderEventHubDispatchService, EventBusPassthroughEventHubDispatchService>();
@@ -34,12 +36,12 @@ public class Startup
 
         services.AddSingleton<TopstepXTradeCopyManagerProvider>(sp =>
         {
-            var manager = new TopstepXTradeCopyManagerProvider();
-            manager.AddManager(
-                "DEMOATAS", "MNQM5", "TOPSTEPXACCOUNT", "MNQM25",
-                new TopstepXTradeCopyManager(sp.GetRequiredService<ITopstepBrowserAutomationClient>(),
-                    sp.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), 2)
-            );
+            var manager = new TopstepXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
+            //manager.AddManager(
+            //    "DEMOATAS", "MNQM5", "TOPSTEPXACCOUNT", "MNQM25",
+            //    new TopstepXTradeCopyManager(sp.GetRequiredService<ITopstepBrowserAutomationClient>(),
+            //        sp.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), 2)
+            //);
             return manager;
         });
 
