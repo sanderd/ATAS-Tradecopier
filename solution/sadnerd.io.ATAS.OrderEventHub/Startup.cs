@@ -1,5 +1,6 @@
 ﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.OrderEventHub.Data;
+using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
@@ -45,6 +46,8 @@ public class Startup
         services.AddControllersWithViews();
         services.AddRazorPages();
         services.AddDbContext<TradeCopyContext>();
+
+        services.AddScoped<CopyStrategyService>();
     }
 
     public void Configure(IApplicationBuilder app)

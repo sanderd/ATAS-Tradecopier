@@ -1,0 +1,35 @@
+﻿@page
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies.CreateModel
+@{
+    ViewData["Title"] = "Add Copy Strategy";
+}
+
+<h1>Add Copy Strategy</h1>
+
+<form method="post">
+    <div class="form-group">
+        <label for="AtasAccountId">Atas Account</label>
+        <select class="form-control" id="AtasAccountId" name="AtasAccountId" asp-for="AtasAccountId" asp-items="@(new SelectList(Model.AtasAccounts, "AtasAccountId", "AtasAccountId"))">
+            <option value="">-- Select Atas Account --</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="TopstepAccountId">Topstep Account</label>
+        <select class="form-control" id="TopstepAccountId" name="TopstepAccountId" asp-for="TopstepAccountId" asp-items="@(new SelectList(Model.TopstepAccounts, "TopstepAccountId", "TopstepAccountId"))">
+            <option value="">-- Select Topstep Account --</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="AtasContract">Atas Contract</label>
+        <input type="text" class="form-control" id="AtasContract" name="AtasContract" asp-for="AtasContract" required />
+    </div>
+    <div class="form-group">
+        <label for="TopstepContract">Topstep Contract</label>
+        <input type="text" class="form-control" id="TopstepContract" name="TopstepContract" asp-for="TopstepContract" required />
+    </div>
+    <div class="form-group">
+        <label for="ContractMultiplier">Contract Multiplier</label>
+        <input type="number" class="form-control" id="ContractMultiplier" name="ContractMultiplier" asp-for="ContractMultiplier" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>
