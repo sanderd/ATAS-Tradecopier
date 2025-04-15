@@ -1,4 +1,5 @@
-﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
+﻿using Microsoft.EntityFrameworkCore;
+using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
@@ -37,11 +38,6 @@ public class Startup
         services.AddSingleton<TopstepXTradeCopyManagerProvider>(sp =>
         {
             var manager = new TopstepXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
-            //manager.AddManager(
-            //    "DEMOATAS", "MNQM5", "TOPSTEPXACCOUNT", "MNQM25",
-            //    new TopstepXTradeCopyManager(sp.GetRequiredService<ITopstepBrowserAutomationClient>(),
-            //        sp.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), 2)
-            //);
             return manager;
         });
 
@@ -52,8 +48,23 @@ public class Startup
         services.AddScoped<CopyStrategyService>();
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            app.UseHsts();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
         app.UseCors(builder =>
         {
             builder.WithOrigins("https://www.youtube.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
@@ -61,8 +72,8 @@ public class Startup
                 .AllowCredentials();
         });
 
-        app.UseStaticFiles();
-        app.UseRouting();
+        app.UseAuthorization();
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<SignalRTopstepAutomationHub>("/topstepxhub");
@@ -74,6 +85,11 @@ public class Startup
             endpoints.MapRazorPages();
         });
 
-        app.UseAuthorization();
+        // Apply migrations and ensure database is created
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+            dbContext.Database.Migrate();
+        }
     }
 }
