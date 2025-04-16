@@ -26,6 +26,8 @@ public class TopstepXTradeCopyManager
         _contractMultiplier = contractMultiplier;
     }
 
+    public bool ErrorState => _errorState;
+
     public void SetConnectionId(string connectionId)
     {
         _connectionId = connectionId;
@@ -33,7 +35,7 @@ public class TopstepXTradeCopyManager
 
     public async Task MoveOrder()
     {
-
+        throw new NotImplementedException();
     }
 
     public async Task CancelOrder(string atasOrderId)
@@ -124,5 +126,11 @@ public class TopstepXTradeCopyManager
             _logger.LogCritical("error flattening position");
             return;
         }
+    }
+
+    public void ClearErrorState()
+    {
+        // TODO: Implement a way to wait for the origin to reach a 0 position
+        _errorState = false;
     }
 }

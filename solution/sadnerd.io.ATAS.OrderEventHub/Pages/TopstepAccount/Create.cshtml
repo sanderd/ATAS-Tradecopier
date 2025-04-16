@@ -1,0 +1,15 @@
+﻿@page
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.TopstepAccounts.CreateModel
+@{
+    ViewData["Title"] = "Add Topstep Account";
+}
+
+<h1>Add Topstep Account</h1>
+
+<form method="post">
+    <div class="form-group">
+        <label for="TopstepAccountId">Topstep Account ID</label>
+        <input type="text" class="form-control" id="TopstepAccountId" name="TopstepAccount.TopstepAccountId" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>

@@ -1,0 +1,26 @@
+﻿@page
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.AtasAccounts.IndexModel
+
+<h1>Atas Accounts</h1>
+
+<a asp-page="/AtasAccount/Create" class="btn btn-primary mb-3">Add New Account</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>AtasAccountId</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var account in Model.AtasAccounts)
+        {
+            <tr>
+                <td>@account.AtasAccountId</td>
+                <td>
+                    <a asp-page="/AtasAccount/Delete" asp-route-id="@account.AtasAccountId" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

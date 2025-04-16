@@ -1,0 +1,15 @@
+﻿@page "{id}"
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.AtasAccounts.DeleteModel
+@{
+    ViewData["Title"] = "Delete Atas Account";
+}
+
+<h1>Delete Atas Account</h1>
+
+<p>Are you sure you want to delete this account?</p>
+
+<form method="post">
+    <input type="hidden" asp-for="AtasAccount.AtasAccountId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-page="/AtasAccount/Index" class="btn btn-secondary">Cancel</a>
+</form>

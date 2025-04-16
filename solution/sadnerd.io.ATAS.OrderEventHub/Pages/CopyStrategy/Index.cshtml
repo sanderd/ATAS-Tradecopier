@@ -1,0 +1,90 @@
+﻿@page
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies.IndexModel
+
+<h1>Copy Strategies</h1>
+
+<a asp-page="/CopyStrategy/Create" class="btn btn-primary mb-3">Add New Strategy</a>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Atas Account</th>
+        <th>Topstep Account</th>
+        <th>Atas Contract</th>
+        <th>Topstep Contract</th>
+        <th>Contract Multiplier</th>
+        <th>Error State</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var strategy in Model.CopyStrategies)
+    {
+        var status = Model.StrategyStatuses.FirstOrDefault(s => s.StrategyId == strategy.Id);
+
+        <tr>
+            <td>@strategy.Id</td>
+            <td>@strategy.AtasAccountId</td>
+            <td>@strategy.TopstepAccountId</td>
+            <td>@strategy.AtasContract</td>
+            <td>@strategy.TopstepContract</td>
+            <td>@strategy.ContractMultiplier</td>
+            <td>
+                @if (status?.ErrorState == true)
+                {
+                    <span style="color: red;">Error</span>
+                }
+                else if (status?.ErrorState == false)
+                {
+                    <span style="color: green;">Active</span>
+                }
+                else
+                {
+                    <span style="color: gray;">Not Running</span>
+                }
+            </td>
+            <td>
+                @if (status?.ErrorState == true)
+                {
+                    <form method="post" asp-page-handler="ClearErrorState">
+                        <input type="hidden" name="strategyId" value="@strategy.Id" />
+                        <button type="submit">Clear Error</button>
+                    </form>
+                }
+            </td>
+            <td>
+                <button class="btn btn-danger" onclick="confirmAndDelete(@strategy.Id)">Delete</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        async function confirmAndDelete(strategyId) {
+            if (confirm("Are you sure you want to delete this strategy?")) {
+                try {
+                    const response = await fetch(`/api/CopyStrategy/${strategyId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert("Strategy deleted successfully.");
+                        location.reload(); // Reload the page to update the list
+                    } else {
+                        const error = await response.json();
+                        alert(`Failed to delete the strategy: ${error.message}`);
+                    }
+                } catch (error) {
+                    console.error("Error deleting strategy:", error);
+                    alert("An error occurred while deleting the strategy.");
+                }
+            }
+        }
+    </script>
+}
