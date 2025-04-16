@@ -14,12 +14,15 @@
         <th>Atas Contract</th>
         <th>Topstep Contract</th>
         <th>Contract Multiplier</th>
+        <th>Error State</th>
         <th>Actions</th>
     </tr>
     </thead>
     <tbody>
     @foreach (var strategy in Model.CopyStrategies)
     {
+        var status = Model.StrategyStatuses.FirstOrDefault(s => s.StrategyId == strategy.Id);
+
         <tr>
             <td>@strategy.Id</td>
             <td>@strategy.AtasAccountId</td>
@@ -27,6 +30,29 @@
             <td>@strategy.AtasContract</td>
             <td>@strategy.TopstepContract</td>
             <td>@strategy.ContractMultiplier</td>
+            <td>
+                @if (status?.ErrorState == true)
+                {
+                    <span style="color: red;">Error</span>
+                }
+                else if (status?.ErrorState == false)
+                {
+                    <span style="color: green;">Active</span>
+                }
+                else
+                {
+                    <span style="color: gray;">Not Running</span>
+                }
+            </td>
+            <td>
+                @if (status?.ErrorState == true)
+                {
+                    <form method="post" asp-page-handler="ClearErrorState">
+                        <input type="hidden" name="strategyId" value="@strategy.Id" />
+                        <button type="submit">Clear Error</button>
+                    </form>
+                }
+            </td>
             <td>
                 <button class="btn btn-danger" onclick="confirmAndDelete(@strategy.Id)">Delete</button>
             </td>

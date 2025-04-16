@@ -42,4 +42,26 @@ public class TopstepXTradeCopyManagerProvider
     {
         return _managers.Where(m => m.topstepAccountId == topstepAccountId && m.topstepInstrument == topstepInstrument).Select(m => m.manager);
     }
+
+    public TopstepXTradeCopyManager GetManager(string atasAccountId, string instrument, string topstepAccountId, string topstepInstrument)
+    {
+        var matchingManagers = _managers
+            .Where(m => m.atasAccountId == atasAccountId &&
+                        m.instrument == instrument &&
+                        m.topstepAccountId == topstepAccountId &&
+                        m.topstepInstrument == topstepInstrument)
+            .ToList();
+
+        if (matchingManagers.Count == 0)
+        {
+            throw new InvalidOperationException($"No matching manager found for AtasAccountId: {atasAccountId}, Instrument: {instrument}, TopstepAccountId: {topstepAccountId}, TopstepInstrument: {topstepInstrument}");
+        }
+
+        if (matchingManagers.Count > 1)
+        {
+            throw new InvalidOperationException($"Multiple matching managers found for AtasAccountId: {atasAccountId}, Instrument: {instrument}, TopstepAccountId: {topstepAccountId}, TopstepInstrument: {topstepInstrument}");
+        }
+
+        return matchingManagers.Single().manager;
+    }
 }
