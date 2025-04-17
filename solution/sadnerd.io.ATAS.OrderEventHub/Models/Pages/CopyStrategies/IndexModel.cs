@@ -40,16 +40,18 @@ public class IndexModel : PageModel
                 StrategyStatuses.Add(new StrategyStatus
                 {
                     StrategyId = strategy.Id,
-                    ErrorState = manager.ErrorState
+                    ErrorState = manager.ErrorState,
+                    ConnectionStatus = manager.IsConnected() ? "Connected" : "Disconnected" // Assuming this property exists
                 });
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
                 // Log or handle the error if no matching manager is found
                 StrategyStatuses.Add(new StrategyStatus
                 {
                     StrategyId = strategy.Id,
-                    ErrorState = null // Indicate that the manager is not running
+                    ErrorState = null, // Indicate that the manager is not running
+                    ConnectionStatus = "Disconnected" // Default to disconnected
                 });
             }
         }
@@ -85,5 +87,6 @@ public class IndexModel : PageModel
     {
         public int StrategyId { get; set; }
         public bool? ErrorState { get; set; } // Null indicates the manager is not running
+        public string ConnectionStatus { get; set; } = "Unknown"; // Default to unknown
     }
 }

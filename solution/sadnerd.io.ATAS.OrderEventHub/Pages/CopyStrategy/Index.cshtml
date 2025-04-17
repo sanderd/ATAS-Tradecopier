@@ -15,6 +15,7 @@
         <th>Topstep Contract</th>
         <th>Contract Multiplier</th>
         <th>Error State</th>
+        <th>Connection Status</th> <!-- New column -->
         <th>Actions</th>
     </tr>
     </thead>
@@ -43,6 +44,9 @@
                 {
                     <span style="color: gray;">Not Running</span>
                 }
+            </td>
+            <td>
+                @status?.ConnectionStatus <!-- Display connection status -->
             </td>
             <td>
                 @if (status?.ErrorState == true)

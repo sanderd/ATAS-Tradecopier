@@ -5,6 +5,7 @@ using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 using sadnerd.io.ATAS.OrderEventHub.Services;
+using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 
@@ -40,6 +41,7 @@ public class Startup
             var manager = new TopstepXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
             return manager;
         });
+        services.AddSingleton<TopstepConnectionManager>();
 
         services.AddControllersWithViews();
         services.AddRazorPages();
