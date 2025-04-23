@@ -4,7 +4,7 @@ using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
-public class TopstepXTradeCopyManager
+public class TopstepXTradeCopyManager : IDestinationManager
 {
     private readonly ITopstepBrowserAutomationClient _topstepBrowserAutomationClient;
     private readonly ILogger<TopstepXTradeCopyManager> _logger;
