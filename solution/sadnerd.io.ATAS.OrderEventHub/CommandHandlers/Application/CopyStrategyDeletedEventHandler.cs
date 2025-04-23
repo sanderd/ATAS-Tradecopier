@@ -1,7 +1,7 @@
 using MediatR;
 using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
 
-namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers;
+namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.Application;
 
 public class CopyStrategyDeletedEventHandler : INotificationHandler<CopyStrategyDeletedEvent>
 {

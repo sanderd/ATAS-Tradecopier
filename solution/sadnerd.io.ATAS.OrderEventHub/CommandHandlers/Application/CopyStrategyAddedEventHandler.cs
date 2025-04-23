@@ -4,7 +4,7 @@ using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
-namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers;
+namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.Application;
 
 public class CopyStrategyAddedEventHandler : INotificationHandler<CopyStrategyAddedEvent>
 {
