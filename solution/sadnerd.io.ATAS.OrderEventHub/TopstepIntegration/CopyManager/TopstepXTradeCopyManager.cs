@@ -1,10 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
+﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
-// Takes in events for a specific account & instrument combination.
 public class TopstepXTradeCopyManager
 {
     private readonly ITopstepBrowserAutomationClient _topstepBrowserAutomationClient;
