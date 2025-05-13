@@ -5,9 +5,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>25ac210d-ea8f-4f61-be46-0f6c243d6d21</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+	  <PackageReference Include="HttpTracer" Version="2.1.1" />
 	  <PackageReference Include="MediatR" Version="12.4.1" />
 	  <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
@@ -20,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.csproj" />
+    <ProjectReference Include="..\sadnerd.io.ATAS.ProjectXApiClient\sadnerd.io.ATAS.ProjectXApiClient.csproj" />
   </ItemGroup>  
 
   <ItemGroup>

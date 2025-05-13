@@ -8,6 +8,7 @@ using sadnerd.io.ATAS.OrderEventHub.Services;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
+using sadnerd.io.ATAS.ProjectXApiClient;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
@@ -43,11 +44,16 @@ public class Startup
         });
         services.AddSingleton<TopstepConnectionManager>();
 
+        //services.AddSingleton<IProjectXClient, ProjectXClient>(x => new ProjectXClient(x.GetRequiredService<HttpClient>(), ));
+        services.AddHttpClient<IProjectXClient, ProjectXClient>();
+
         services.AddControllersWithViews();
         services.AddRazorPages();
         services.AddDbContext<TradeCopyContext>();
 
         services.AddScoped<CopyStrategyService>();
+
+        services.AddHostedService<TopstepTest>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
