@@ -58,7 +58,8 @@ public class IndexModel : PageModel
     }
     public IActionResult OnPostClearErrorState(int strategyId)
     {
-        var strategy = CopyStrategies.FirstOrDefault(s => s.Id == strategyId);
+        // Fetch the strategy from the database, not from the (empty) CopyStrategies list
+        var strategy = _context.CopyStrategies.FirstOrDefault(s => s.Id == strategyId);
         if (strategy == null)
         {
             return NotFound();
