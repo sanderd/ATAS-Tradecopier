@@ -11,7 +11,7 @@ public class TopstepXTradeCopyManager : IDestinationManager
     private readonly int _contractMultiplier;
     private TopstepConnection? _connection = null;
     private List<(string AtasOrderId, string TopstepOrderId)> _orderMap = new();
-    private bool _errorState = false;
+    private ManagerState _state = ManagerState.Disabled;
 
 
     public TopstepXTradeCopyManager(
@@ -25,7 +25,7 @@ public class TopstepXTradeCopyManager : IDestinationManager
         _contractMultiplier = contractMultiplier;
     }
 
-    public bool ErrorState => _errorState;
+    public ManagerState State => _state;
 
     public void SetConnection(TopstepConnection connection)
     {
@@ -44,12 +44,12 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public async Task CancelOrder(string atasOrderId)
     {
-        if (!IsConnected() || _errorState) return;
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
 
         var orderMapItem = _orderMap.SingleOrDefault(map => map.AtasOrderId == atasOrderId);
         if (orderMapItem == default)
         {
-            _errorState = true;
+            _state = ManagerState.Error;
             _logger.LogCritical("error canceling order because I don't know the topstepx order id");
             return;
         }
@@ -59,12 +59,12 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public async Task CreateLimitOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity)
     {
-        if (!IsConnected() || _errorState) return;
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
         var result = await _topstepBrowserAutomationClient.CreateLimitOrder(_connection.SignalRConnectionKey, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
 
         if (!result.Success)
         {
-            _errorState = true;
+            _state = ManagerState.Error;
             _logger.LogCritical("error creating limit order {atasOrderId} ({direction}), {orderprice}, {quantity}", atasOrderId, orderDirection, orderPrice, orderQuantity * _contractMultiplier);
             return;
         }
@@ -74,18 +74,18 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public async Task CreateMarketOrder(string atasOrderId, OrderDirection orderDirection, decimal orderQuantity)
     {
-        if (!IsConnected() || _errorState) return;
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
         var result = await _topstepBrowserAutomationClient.CreateMarketOrder(_connection.SignalRConnectionKey, orderDirection == OrderDirection.Buy ? true : false, (int)orderQuantity * _contractMultiplier);
     }
 
     public async Task SetTakeProfit(string atasOrderId, decimal orderPrice)
     {
-        if (!IsConnected() || _errorState) return;
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
         var result = await _topstepBrowserAutomationClient.SetTakeProfit(_connection.SignalRConnectionKey, orderPrice);
 
         if (!result.Success)
         {
-            _errorState = true;
+            _state = ManagerState.Error;
             _logger.LogCritical("error setting take profit {atasOrderId} {orderprice}}", atasOrderId, orderPrice);
             return;
         }
@@ -93,12 +93,12 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public async Task CreateStopOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity)
     {
-        if (!IsConnected() || _errorState) return;
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
         var result = await _topstepBrowserAutomationClient.CreateStopOrder(_connection.SignalRConnectionKey, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
 
         if (!result.Success)
         {
-            _errorState = true;
+            _state = ManagerState.Error;
             _logger.LogCritical("error creating stop order {atasOrderId} ({direction}), {orderprice}, {quantity}", atasOrderId, orderDirection, orderPrice, orderQuantity);
             return;
         }
@@ -108,12 +108,12 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public async Task SetStopLoss(string atasOrderId, decimal orderPrice)
     {
-        if (!IsConnected() || _errorState) return;
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
         var result = await _topstepBrowserAutomationClient.SetStopLoss(_connection.SignalRConnectionKey, orderPrice);
 
         if (!result.Success)
         {
-            _errorState = true;
+            _state = ManagerState.Error;
             _logger.LogCritical("error setting stop loss {atasOrderId} {orderprice}}", atasOrderId, orderPrice);
             return;
         }
@@ -121,20 +121,26 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public async Task FlattenPosition()
     {
-        if (!IsConnected() || _errorState) return;
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
         var result = await _topstepBrowserAutomationClient.Flatten(_connection.SignalRConnectionKey);
 
         if (!result.Success)
         {
-            _errorState = true;
+            _state = ManagerState.Error;
             _logger.LogCritical("error flattening position");
             return;
         }
     }
 
-    public void ClearErrorState()
+    public void SetState(ManagerState state)
     {
-        // TODO: Implement a way to wait for the origin to reach a 0 position
-        _errorState = false;
+        _state = state;
     }
+}
+
+public enum ManagerState
+{
+    Disabled,
+    Enabled,
+    Error
 }

@@ -4,7 +4,7 @@ namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
 public interface IDestinationManager
 {
-    bool ErrorState { get; }
+    ManagerState State { get; }
     bool IsConnected();
     Task MoveOrder();
     Task CancelOrder(string atasOrderId);
@@ -14,5 +14,6 @@ public interface IDestinationManager
     Task CreateStopOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity);
     Task SetStopLoss(string atasOrderId, decimal orderPrice);
     Task FlattenPosition();
-    void ClearErrorState();
+
+    void SetState(ManagerState state);
 }
