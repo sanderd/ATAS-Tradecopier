@@ -11,6 +11,8 @@ public class ProjectXClient : IProjectXClient, IDisposable
     
     private readonly RestClient _client;
     private readonly string _apiKey;
+    private readonly string _apiUrl = "https://api.topstepx.com";
+    private readonly string _userApiUrl = "https://userapi.topstepx.com";
 
     public ProjectXClient(
         HttpClient httpClient
@@ -22,7 +24,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
         _client = new RestClient(httpClient, new RestClientOptions
         {
             Authenticator = new ProjectXAuthenticator("https://api.topstepx.com", _apiKey, "sanderd"),
-            BaseUrl = new Uri("https://api.topstepx.com"),
+            //BaseUrl = new Uri("https://api.topstepx.com"),
             
         });
     }
@@ -42,7 +44,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<List<Account>> GetActiveAccounts(CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest("api/account/search", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/account/search", Method.Post);
         request.AddJsonBody(new { onlyActiveAccounts = true });
         
         var response = await _client.PostAsync<ListAccountModel>(request, cancellationToken);
@@ -52,7 +54,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<List<Contract>> GetContracts(string searchText, CancellationToken cancellationToken)
     {
-        var request = CreateRequest("api/Contract/search", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/Contract/search", Method.Post);
         request.AddJsonBody(new {
             live = false,
             searchText = searchText
@@ -65,7 +67,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<int?> CreateLimitOrder(int accountId, string contractId, bool isLong, decimal orderPrice, int orderQuantity, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest("api/Order/place", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/Order/place", Method.Post);
         request.AddJsonBody(new
         {
             accountId,
@@ -86,7 +88,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<int?> CreateMarketOrder(int accountId, string contractId, bool isLong, int orderQuantity, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest("api/Order/place", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/Order/place", Method.Post);
         request.AddJsonBody(new
         {
             accountId,
@@ -106,7 +108,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<int?> CreateStopOrder(int accountId, string contractId, bool isLong, decimal stopPrice, int orderQuantity, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest("api/Order/place", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/Order/place", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId,
@@ -126,7 +128,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task CloseContract(int accountId, string contractId, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest("api/Position/closeContract", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/Position/closeContract", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId,
@@ -139,7 +141,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<List<Order>> GetOpenOrders(int accountId, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest("api/Order/searchOpen", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/Order/searchOpen", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId
@@ -152,7 +154,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task CancelOrder(int accountId, int orderId, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest("api/Order/cancel", Method.Post);
+        var request = CreateRequest($"{_apiUrl}/api/Order/cancel", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId,
@@ -161,5 +163,31 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
         await _client.PostAsync(request, cancellationToken);
         // TODO: error handling
+    }
+
+    public async Task SetStoploss(int positionId, decimal? stoploss, decimal? takeProfit, CancellationToken cancellationToken = default)
+    {
+        var request = CreateRequest($"{_userApiUrl}/Order/editStopLoss", Method.Post);
+        request.AddJsonBody(new
+        {
+            positionId = positionId,
+            stopLoss = stoploss,
+            takeProfit = takeProfit
+        });
+
+        var result = await _client.PostAsync(request, cancellationToken);
+    }
+
+    public async Task<List<Position>> GetPositions(int accountId, CancellationToken cancellationToken = default)
+    {
+        var request = CreateRequest($"{_apiUrl}/api/Position/searchOpen", Method.Post);
+        request.AddJsonBody(new
+        {
+            accountId = accountId
+        });
+
+        var response = await _client.PostAsync<ListPositionsModel>(request, cancellationToken);
+
+        return response!.Positions;
     }
 }

@@ -1,4 +1,6 @@
-﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
+﻿using System.Diagnostics.Contracts;
+using System.Security.Cryptography.X509Certificates;
+using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 using sadnerd.io.ATAS.ProjectXApiClient;
@@ -20,6 +22,8 @@ public class TopstepXTradeCopyManager : IDestinationManager
     public int? _projectXAccountId = null;
     public string? _projectXContract = null;
     public SemaphoreSlim _accountDetailsSemaphore = new SemaphoreSlim(1);
+    private decimal? _lastStoploss = null;
+    private decimal? _lastTakeProfit = null;
 
 
     public TopstepXTradeCopyManager(
@@ -153,27 +157,43 @@ public class TopstepXTradeCopyManager : IDestinationManager
     public async Task SetStopLoss(string atasOrderId, decimal orderPrice)
     {
         if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.SetStopLoss(_connection.SignalRConnectionKey, orderPrice);
 
-        if (!result.Success)
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+
+        var openPositions = await _projectXClient.GetPositions(accountId);
+        var openPosition = openPositions.FirstOrDefault(x => x.ContractId == contract);
+
+        if (openPosition == null)
         {
             _state = ManagerState.Error;
-            _logger.LogCritical("error setting stop loss {atasOrderId} {orderprice}}", atasOrderId, orderPrice);
+            _logger.LogCritical("error setting stoploss because no topstep position exists");
             return;
         }
+
+        _lastStoploss = orderPrice;
+        await _projectXClient.SetStoploss(openPosition.Id, _lastStoploss, _lastTakeProfit, CancellationToken.None);
     }
 
     public async Task SetTakeProfit(string atasOrderId, decimal orderPrice)
     {
         if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.SetTakeProfit(_connection.SignalRConnectionKey, orderPrice);
 
-        if (!result.Success)
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+        
+        var openPositions = await _projectXClient.GetPositions(accountId);
+        var openPosition = openPositions.FirstOrDefault(x => x.ContractId == contract);
+
+        if (openPosition == null)
         {
             _state = ManagerState.Error;
-            _logger.LogCritical("error setting take profit {atasOrderId} {orderprice}}", atasOrderId, orderPrice);
+            _logger.LogCritical("error setting stoploss because no topstep position exists");
             return;
         }
+        
+        _lastTakeProfit = orderPrice;
+        await _projectXClient.SetStoploss(openPosition.Id, _lastStoploss, _lastTakeProfit, CancellationToken.None);
     }
 
     public async Task FlattenPosition()
@@ -189,6 +209,9 @@ public class TopstepXTradeCopyManager : IDestinationManager
         {
             await _projectXClient.CancelOrder(accountId, order.Id);
         }
+
+        _lastStoploss = null;
+        _lastTakeProfit = null;
     }
 
     public void SetState(ManagerState state)

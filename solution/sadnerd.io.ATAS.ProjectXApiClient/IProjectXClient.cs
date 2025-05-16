@@ -10,4 +10,8 @@ public interface IProjectXClient
     Task CloseContract(int accountId, string contractId, CancellationToken cancellationToken = default);
     Task<List<Order>> GetOpenOrders(int accountId, CancellationToken cancellationToken = default);
     Task CancelOrder(int accountId, int orderId, CancellationToken cancellationToken = default);
+
+    Task SetStoploss(int positionId, decimal? stoploss, decimal? takeProfit, CancellationToken cancellationToken = default);
+
+    Task<List<Position>> GetPositions(int accountId, CancellationToken cancellationToken = default);
 }

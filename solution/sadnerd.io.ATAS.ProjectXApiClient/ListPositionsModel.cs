@@ -2,11 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace sadnerd.io.ATAS.ProjectXApiClient;
 
-public record ListOrdersModel
+public record ListPositionsModel
 {
-    [JsonPropertyName("orders")]
-    public List<Order> Orders { get; init; }
-
     [JsonPropertyName("success")]
     public bool Success { get; init; }
 
@@ -15,4 +12,7 @@ public record ListOrdersModel
 
     [JsonPropertyName("errorMessage")]
     public string? ErrorMessage { get; init; }
+
+    [JsonPropertyName("positions")]
+    public List<Position> Positions { get; init; }
 }
