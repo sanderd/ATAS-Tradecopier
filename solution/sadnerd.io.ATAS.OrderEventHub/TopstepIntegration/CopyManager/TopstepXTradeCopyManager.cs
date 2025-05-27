@@ -52,6 +52,7 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public bool IsConnected()
     {
+        return true; // Meh, browser connection no longer required
         return _connection?.Status == ConnectionStatus.Connected;
     }
 
