@@ -30,7 +30,6 @@ public class OrderChangedCommandHandler : INotificationHandler<OrderChangedEvent
             return;
         }
 
-
         foreach (var copyManager in copyManagers)
         {
             switch (request.Message.Status)
@@ -47,6 +46,40 @@ public class OrderChangedCommandHandler : INotificationHandler<OrderChangedEvent
                 default:
                     _logger.LogInformation("Order changed event ignored");
                     break;
+            }
+        }
+    }
+}
+
+public class PositionChangedCommandHandler : INotificationHandler<PositionChangedEvent>
+{
+    private readonly TopstepXTradeCopyManagerProvider _tradeCopyManager;
+    private readonly ILogger<PositionChangedCommandHandler> _logger;
+    public PositionChangedCommandHandler(
+        TopstepXTradeCopyManagerProvider tradeCopyManager,
+        ILogger<PositionChangedCommandHandler> logger
+    )
+    {
+        _tradeCopyManager = tradeCopyManager;
+        _logger = logger;
+    }
+    public async Task Handle(PositionChangedEvent request, CancellationToken cancellationToken)
+    {
+        var instrument = request.Message.PositionSecurityId.Split('@')[0];
+        var copyManagers = _tradeCopyManager.GetManagers(request.Message.PositionAccountId, instrument).ToList();
+
+        if (!copyManagers.Any())
+        {
+            _logger.LogInformation("No copy managers configured for ATAS source {account} and instrument {instrument}", request.Message.PositionAccountId, request.Message.PositionSecurityId);
+            return;
+        }
+
+        foreach (var copyManager in copyManagers)
+        {
+            if (request.Message.Volume == 0)
+            {
+                _logger.LogInformation("flattening as position should be 0");
+                await copyManager.FlattenPosition();
             }
         }
     }

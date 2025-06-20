@@ -211,6 +211,9 @@ public class TopstepXTradeCopyManager : IDestinationManager
             await _projectXClient.CancelOrder(accountId, order.Id);
         }
 
+        // To be sure no orders triggered after closing it the first time
+        await _projectXClient.CloseContract(accountId, contract);
+
         _lastStoploss = null;
         _lastTakeProfit = null;
     }

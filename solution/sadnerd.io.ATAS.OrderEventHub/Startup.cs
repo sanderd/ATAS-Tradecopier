@@ -9,6 +9,7 @@ using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 using sadnerd.io.ATAS.ProjectXApiClient;
+using Serilog;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
@@ -54,6 +55,11 @@ public class Startup
         services.AddScoped<CopyStrategyService>();
 
         services.AddHostedService<TopstepTest>();
+
+        services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
+            //.ReadFrom.Configuration(builder.Configuration)
+            .Enrich.FromLogContext()
+            .WriteTo.Console());
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -92,6 +98,8 @@ public class Startup
 
             endpoints.MapRazorPages();
         });
+
+        
 
         // Apply migrations and ensure database is created
         using (var scope = app.ApplicationServices.CreateScope())
