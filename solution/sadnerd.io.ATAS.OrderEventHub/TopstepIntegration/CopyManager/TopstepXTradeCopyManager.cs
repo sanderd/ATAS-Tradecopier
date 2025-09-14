@@ -2,14 +2,12 @@
 using System.Security.Cryptography.X509Certificates;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 using sadnerd.io.ATAS.ProjectXApiClient;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
 public class TopstepXTradeCopyManager : IDestinationManager
 {
-    private readonly ITopstepBrowserAutomationClient _topstepBrowserAutomationClient;
     private readonly IProjectXClient _projectXClient;
     private readonly ILogger<TopstepXTradeCopyManager> _logger;
     private readonly int _contractMultiplier;
@@ -27,7 +25,6 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
 
     public TopstepXTradeCopyManager(
-        ITopstepBrowserAutomationClient topstepBrowserAutomationClient,
         IProjectXClient projectXClient,
         ILogger<TopstepXTradeCopyManager> logger,
         int contractMultiplier,
@@ -35,7 +32,6 @@ public class TopstepXTradeCopyManager : IDestinationManager
         string topstepContract
     )
     {
-        _topstepBrowserAutomationClient = topstepBrowserAutomationClient;
         _projectXClient = projectXClient;
         _logger = logger;
         _contractMultiplier = contractMultiplier;
