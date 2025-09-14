@@ -1,28 +1,25 @@
-﻿using RestSharp;
+﻿using Microsoft.Extensions.Options;
+using RestSharp;
 
 namespace sadnerd.io.ATAS.ProjectXApiClient;
 
 public class ProjectXClient : IProjectXClient, IDisposable
 {
+    private readonly IOptions<ProjectXClientOptions> _options;
     // https://restsharp.dev/docs/usage/example/
     
     private readonly RestClient _client;
-    private readonly string _apiKey;
-    private readonly string _apiUrl = "https://api.topstepx.com";
-    private readonly string _userApiUrl = "https://userapi.topstepx.com";
-
+    
     public ProjectXClient(
-        HttpClient httpClient
-        //string apiKey
+        HttpClient httpClient,
+        IOptions<ProjectXClientOptions> options
     )
     {
-        _apiKey = "6p9C6d/G5QMR7UZ/Bfsf2TjzKLLvJQtPqmTt/sVRqZM=";
-        //_apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
+        _options = options;
+        
         _client = new RestClient(httpClient, new RestClientOptions
         {
-            Authenticator = new ProjectXAuthenticator("https://api.topstepx.com", _apiKey, "sanderd"),
-            //BaseUrl = new Uri("https://api.topstepx.com"),
-            
+            Authenticator = new ProjectXAuthenticator(_options.Value.ApiUrl, _options.Value.ApiKey, _options.Value.ApiUser),
         });
     }
 
@@ -41,7 +38,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<List<Account>> GetActiveAccounts(CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/account/search", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/account/search", Method.Post);
         request.AddJsonBody(new { onlyActiveAccounts = true });
         
         var response = await _client.PostAsync<ListAccountModel>(request, cancellationToken);
@@ -51,7 +48,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<List<Contract>> GetContracts(string searchText, CancellationToken cancellationToken)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Contract/search", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Contract/search", Method.Post);
         request.AddJsonBody(new {
             live = false,
             searchText = searchText
@@ -64,7 +61,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<int?> CreateLimitOrder(int accountId, string contractId, bool isLong, decimal orderPrice, int orderQuantity, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Order/place", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Order/place", Method.Post);
         request.AddJsonBody(new
         {
             accountId,
@@ -85,7 +82,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<int?> CreateMarketOrder(int accountId, string contractId, bool isLong, int orderQuantity, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Order/place", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Order/place", Method.Post);
         request.AddJsonBody(new
         {
             accountId,
@@ -105,7 +102,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<int?> CreateStopOrder(int accountId, string contractId, bool isLong, decimal stopPrice, int orderQuantity, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Order/place", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Order/place", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId,
@@ -125,7 +122,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task CloseContract(int accountId, string contractId, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Position/closeContract", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Position/closeContract", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId,
@@ -138,7 +135,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<List<Order>> GetOpenOrders(int accountId, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Order/searchOpen", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Order/searchOpen", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId
@@ -151,7 +148,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task CancelOrder(int accountId, int orderId, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Order/cancel", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Order/cancel", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId,
@@ -164,7 +161,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task SetStoploss(int positionId, decimal? stoploss, decimal? takeProfit, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_userApiUrl}/Order/editStopLoss", Method.Post);
+        var request = CreateRequest($"{_options.Value.UserApiUrl}/Order/editStopLoss", Method.Post);
         request.AddJsonBody(new
         {
             positionId = positionId,
@@ -177,7 +174,7 @@ public class ProjectXClient : IProjectXClient, IDisposable
 
     public async Task<List<Position>> GetPositions(int accountId, CancellationToken cancellationToken = default)
     {
-        var request = CreateRequest($"{_apiUrl}/api/Position/searchOpen", Method.Post);
+        var request = CreateRequest($"{_options.Value.ApiUrl}/api/Position/searchOpen", Method.Post);
         request.AddJsonBody(new
         {
             accountId = accountId
