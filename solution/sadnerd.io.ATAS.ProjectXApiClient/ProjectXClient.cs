@@ -1,7 +1,4 @@
 ﻿using RestSharp;
-using System.Diagnostics.Contracts;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace sadnerd.io.ATAS.ProjectXApiClient;
 

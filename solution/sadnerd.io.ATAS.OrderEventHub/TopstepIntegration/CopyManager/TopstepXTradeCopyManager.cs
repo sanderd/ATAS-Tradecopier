@@ -13,13 +13,12 @@ public class TopstepXTradeCopyManager : IDestinationManager
     private readonly int _contractMultiplier;
     private readonly string _topstepAccount;
     private readonly string _topstepContract;
-    private TopstepConnection? _connection = null;
     private List<(string AtasOrderId, string TopstepOrderId)> _orderMap = new();
     private ManagerState _state = ManagerState.Disabled;
 
-    public int? _projectXAccountId = null;
-    public string? _projectXContract = null;
-    public SemaphoreSlim _accountDetailsSemaphore = new SemaphoreSlim(1);
+    private int? _projectXAccountId = null;
+    private string? _projectXContract = null;
+    private SemaphoreSlim _accountDetailsSemaphore = new(1);
     private decimal? _lastStoploss = null;
     private decimal? _lastTakeProfit = null;
 
@@ -41,15 +40,9 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public ManagerState State => _state;
 
-    public void SetConnection(TopstepConnection connection)
-    {
-        _connection = connection;
-    }
-
     public bool IsConnected()
     {
         return true; // Meh, browser connection no longer required
-        return _connection?.Status == ConnectionStatus.Connected;
     }
 
     public async Task<int> GetProjectXAccountId()

@@ -34,7 +34,6 @@ public class TopstepXTradeCopyManagerProvider
             }
 
             var manager = new TopstepXTradeCopyManager(
-                _serviceProvider.GetRequiredService<ITopstepBrowserAutomationClient>(),
                 _serviceProvider.GetRequiredService<IProjectXClient>(),
                 _serviceProvider.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(),
                 contractMultiplier,
