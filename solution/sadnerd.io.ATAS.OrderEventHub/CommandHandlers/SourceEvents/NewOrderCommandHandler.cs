@@ -7,11 +7,11 @@ namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.SourceEvents;
 
 public class NewOrderCommandHandler : INotificationHandler<NewOrderEvent>
 {
-    private readonly TopstepXTradeCopyManagerProvider _tradeCopyManager;
+    private readonly ProjectXTradeCopyManagerProvider _tradeCopyManager;
     private readonly ILogger<NewOrderCommandHandler> _logger;
 
     public NewOrderCommandHandler(
-        TopstepXTradeCopyManagerProvider tradeCopyManager,
+        ProjectXTradeCopyManagerProvider tradeCopyManager,
         ILogger<NewOrderCommandHandler> logger
     )
     {

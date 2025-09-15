@@ -6,36 +6,36 @@ using sadnerd.io.ATAS.ProjectXApiClient;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
-public class TopstepXTradeCopyManager : IDestinationManager
+public class ProjectXTradeCopyManager : IDestinationManager
 {
     private readonly IProjectXClient _projectXClient;
-    private readonly ILogger<TopstepXTradeCopyManager> _logger;
+    private readonly ILogger<ProjectXTradeCopyManager> _logger;
     private readonly int _contractMultiplier;
-    private readonly string _topstepAccount;
-    private readonly string _topstepContract;
-    private List<(string AtasOrderId, string TopstepOrderId)> _orderMap = new();
+    private readonly string _projectXAccount;
+    private readonly string _projectXContract;
+    private List<(string AtasOrderId, string ProjectXOrderId)> _orderMap = new();
     private ManagerState _state = ManagerState.Disabled;
 
     private int? _projectXAccountId = null;
-    private string? _projectXContract = null;
+    private string? _projectXContractId = null;
     private SemaphoreSlim _accountDetailsSemaphore = new(1);
     private decimal? _lastStoploss = null;
     private decimal? _lastTakeProfit = null;
 
 
-    public TopstepXTradeCopyManager(
+    public ProjectXTradeCopyManager(
         IProjectXClient projectXClient,
-        ILogger<TopstepXTradeCopyManager> logger,
+        ILogger<ProjectXTradeCopyManager> logger,
         int contractMultiplier,
-        string topstepAccount,
-        string topstepContract
+        string projectXAccount,
+        string projectXContract
     )
     {
         _projectXClient = projectXClient;
         _logger = logger;
         _contractMultiplier = contractMultiplier;
-        _topstepAccount = topstepAccount;
-        _topstepContract = topstepContract;
+        _projectXAccount = projectXAccount;
+        _projectXContract = projectXContract;
     }
 
     public ManagerState State => _state;
@@ -55,7 +55,7 @@ public class TopstepXTradeCopyManager : IDestinationManager
             if (_projectXAccountId == null)
             {
                 var accounts = await _projectXClient.GetActiveAccounts(CancellationToken.None);
-                _projectXAccountId = accounts.FirstOrDefault(x => x.Name == _topstepAccount)?.Id;
+                _projectXAccountId = accounts.FirstOrDefault(x => x.Name == _projectXAccount)?.Id;
                 return _projectXAccountId ?? throw new NotImplementedException();
             }
         }
@@ -69,16 +69,16 @@ public class TopstepXTradeCopyManager : IDestinationManager
 
     public async Task<string> GetProjectXContract()
     {
-        if (_projectXContract != null) return _projectXContract;
+        if (_projectXContractId != null) return _projectXContractId;
 
         await _accountDetailsSemaphore.WaitAsync();
         try
         {
-            if (_projectXContract == null)
+            if (_projectXContractId == null)
             {
-                var contracts = await _projectXClient.GetContracts(_topstepContract, CancellationToken.None);
-                _projectXContract = contracts.FirstOrDefault(x => x.Id.Replace(".", "").EndsWith(_topstepContract))?.Id;
-                return _projectXContract ?? throw new NotImplementedException();
+                var contracts = await _projectXClient.GetContracts(_projectXContract, CancellationToken.None);
+                _projectXContractId = contracts.FirstOrDefault(x => x.Id.Replace(".", "").EndsWith(_projectXContract))?.Id;
+                return _projectXContractId ?? throw new NotImplementedException();
             }
         }
         finally
@@ -86,7 +86,7 @@ public class TopstepXTradeCopyManager : IDestinationManager
             _accountDetailsSemaphore.Release();
         }
 
-        return _projectXContract ?? throw new NotImplementedException();
+        return _projectXContractId ?? throw new NotImplementedException();
     }
     
 
@@ -108,7 +108,7 @@ public class TopstepXTradeCopyManager : IDestinationManager
         }
 
         var accountId = await GetProjectXAccountId();
-        await _projectXClient.CancelOrder(accountId, int.Parse(orderMapItem.TopstepOrderId));
+        await _projectXClient.CancelOrder(accountId, int.Parse(orderMapItem.ProjectXOrderId));
     }
 
     public async Task CreateLimitOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity)

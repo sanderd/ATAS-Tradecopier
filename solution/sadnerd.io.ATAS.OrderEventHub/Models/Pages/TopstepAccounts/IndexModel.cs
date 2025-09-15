@@ -13,10 +13,10 @@ public class IndexModel : PageModel
         _context = context;
     }
 
-    public List<TopstepAccount> TopstepAccounts { get; set; } = new();
+    public List<ProjectXAccount> ProjectXAccounts { get; set; } = new();
 
     public void OnGet()
     {
-        TopstepAccounts = _context.TopstepAccount.ToList();
+        ProjectXAccounts = _context.ProjectXAccounts.ToList();
     }
 }

@@ -7,11 +7,11 @@ namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.TopstepClientEvents;
 
 public class TopstepClientConnectedEventHandler : INotificationHandler<TopstepClientConnectedEvent>
 {
-    private readonly TopstepXTradeCopyManagerProvider _provider;
+    private readonly ProjectXTradeCopyManagerProvider _provider;
     private readonly TopstepConnectionManager _manager;
 
     public TopstepClientConnectedEventHandler(
-        TopstepXTradeCopyManagerProvider provider,
+        ProjectXTradeCopyManagerProvider provider,
         TopstepConnectionManager manager
     )
     {
@@ -24,10 +24,10 @@ public class TopstepClientConnectedEventHandler : INotificationHandler<TopstepCl
         var connection = new TopstepConnection(ConnectionStatus.Connected, notification.ConnectionId, notification.AccountName, notification.Instrument);
         _manager.Add(connection);
         
-        var managers = _provider.GetManagersByTopstepInformation(notification.AccountName, notification.Instrument);
+        var managers = _provider.GetManagersByProjectXInformation(notification.AccountName, notification.Instrument);
         foreach (var manager in managers)
         {
-            manager.SetConnection(connection);
+            manager.SetState(ManagerState.Enabled);
         }
     }
 }

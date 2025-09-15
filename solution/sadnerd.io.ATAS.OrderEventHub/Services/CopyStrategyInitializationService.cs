@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
@@ -21,9 +22,11 @@ public class CopyStrategyInitializationService : IHostedService
         using (var scope = _serviceProvider.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
-            var managerProvider = scope.ServiceProvider.GetRequiredService<TopstepXTradeCopyManagerProvider>();
+            var managerProvider = scope.ServiceProvider.GetRequiredService<ProjectXTradeCopyManagerProvider>();
 
-            var strategies = context.CopyStrategies.ToList();
+            var strategies = context.CopyStrategies
+                .Include(x => x.ProjectXAccount)
+                .ToList();
 
             foreach (var strategy in strategies)
             {
@@ -32,9 +35,10 @@ public class CopyStrategyInitializationService : IHostedService
                     managerProvider.AddManager(
                         strategy.AtasAccountId,
                         strategy.AtasContract,
-                        strategy.TopstepAccountId,
-                        strategy.TopstepContract,
-                        strategy.ContractMultiplier
+                        strategy.ProjectXAccountId,
+                        strategy.ProjectXContract,
+                        strategy.ContractMultiplier,
+                        strategy.ProjectXAccount.Vendor
                     );
 
                     _logger.LogInformation($"Initialized manager for strategy {strategy.Id}.");

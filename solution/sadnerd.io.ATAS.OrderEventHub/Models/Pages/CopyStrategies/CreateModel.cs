@@ -23,25 +23,25 @@ public class CreateModel : PageModel
     public string AtasAccountId { get; set; }
 
     [BindProperty]
-    public string TopstepAccountId { get; set; }
+    public string ProjectXAccountId { get; set; }
 
     [BindProperty]
     public string AtasContract { get; set; }
 
     [BindProperty]
-    public string TopstepContract { get; set; }
+    public string ProjectXContract { get; set; }
 
     [BindProperty]
     public int ContractMultiplier { get; set; }
 
     public List<AtasAccount> AtasAccounts { get; set; } = new();
-    public List<TopstepAccount> TopstepAccounts { get; set; } = new();
+    public List<ProjectXAccount> ProjectXAccounts { get; set; } = new();
 
     public void OnGet()
     {
         // Fetch accounts from the database
         AtasAccounts = _context.AtasAccounts.ToList();
-        TopstepAccounts = _context.TopstepAccount.ToList();
+        ProjectXAccounts = _context.ProjectXAccounts.ToList();
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -53,9 +53,9 @@ public class CreateModel : PageModel
 
         await _copyStrategyService.AddStrategy(
             AtasAccountId,
-            TopstepAccountId,
+            ProjectXAccountId,
             AtasContract,
-            TopstepContract,
+            ProjectXContract,
             ContractMultiplier
         );
 

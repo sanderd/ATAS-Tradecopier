@@ -10,7 +10,7 @@ public class DeleteModel : PageModel
     private readonly TradeCopyContext _context;
 
     [BindProperty]
-    public TopstepAccount TopstepAccount { get; set; }
+    public ProjectXAccount ProjectXAccount { get; set; }
 
     public DeleteModel(TradeCopyContext context)
     {
@@ -19,9 +19,9 @@ public class DeleteModel : PageModel
 
     public IActionResult OnGet(string id)
     {
-        TopstepAccount = _context.TopstepAccount.FirstOrDefault(a => a.TopstepAccountId == id);
+        ProjectXAccount = _context.ProjectXAccounts.FirstOrDefault(a => a.ProjectXAccountId == id);
 
-        if (TopstepAccount == null)
+        if (ProjectXAccount == null)
         {
             return NotFound();
         }
@@ -31,14 +31,14 @@ public class DeleteModel : PageModel
 
     public IActionResult OnPost()
     {
-        var account = _context.TopstepAccount.FirstOrDefault(a => a.TopstepAccountId == TopstepAccount.TopstepAccountId);
+        var account = _context.ProjectXAccounts.FirstOrDefault(a => a.ProjectXAccountId == ProjectXAccount.ProjectXAccountId);
 
         if (account == null)
         {
             return NotFound();
         }
 
-        _context.TopstepAccount.Remove(account);
+        _context.ProjectXAccounts.Remove(account);
         _context.SaveChanges();
 
         return RedirectToPage("/TopstepAccount/Index");

@@ -6,7 +6,7 @@ namespace sadnerd.io.ATAS.OrderEventHub.Data;
 public class TradeCopyContext : DbContext
 {
     public DbSet<AtasAccount> AtasAccounts { get; set; }
-    public DbSet<TopstepAccount> TopstepAccount { get; set; }
+    public DbSet<ProjectXAccount> ProjectXAccounts { get; set; }
     public DbSet<CopyStrategy> CopyStrategies { get; set; }
 
     public string DbPath { get; }

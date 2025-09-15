@@ -1,15 +1,21 @@
 ﻿@page
 @model sadnerd.io.ATAS.OrderEventHub.Models.Pages.TopstepAccounts.CreateModel
 @{
-    ViewData["Title"] = "Add Topstep Account";
+    ViewData["Title"] = "Add ProjectX Account";
 }
 
-<h1>Add Topstep Account</h1>
+<h1>Add ProjectX Account</h1>
 
 <form method="post">
     <div class="form-group">
-        <label for="TopstepAccountId">Topstep Account ID</label>
-        <input type="text" class="form-control" id="TopstepAccountId" name="TopstepAccount.TopstepAccountId" required />
+        <label for="ProjectXAccountId">ProjectX Account ID</label>
+        <input type="text" class="form-control" id="ProjectXAccountId" name="ProjectXAccount.ProjectXAccountId" required />
+    </div>
+    <div class="form-group">
+        <label for="Vendor">Vendor</label>
+        <select class="form-control" id="Vendor" name="ProjectXAccount.Vendor" asp-items="Model.AvailableVendors" required>
+            <option value="">-- Select Vendor --</option>
+        </select>
     </div>
     <button type="submit" class="btn btn-primary">Add</button>
 </form>

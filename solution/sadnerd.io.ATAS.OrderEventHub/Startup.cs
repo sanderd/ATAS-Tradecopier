@@ -2,6 +2,7 @@
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
+using sadnerd.io.ATAS.OrderEventHub.Factories;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 using sadnerd.io.ATAS.OrderEventHub.Services;
@@ -38,13 +39,18 @@ public class Startup
         services.AddSingleton<IEventBus, EventBus>();
         services.AddTransient<ITopstepBrowserAutomationClient, TopstepBrowserAutomationClient>();
 
-        services.AddSingleton<TopstepXTradeCopyManagerProvider>(sp =>
+        // Add ProjectX vendor configuration service
+        services.AddSingleton<IProjectXVendorConfigurationService, ProjectXVendorConfigurationService>();
+        services.AddSingleton<IProjectXClientFactory, ProjectXClientFactory>();
+
+        services.AddSingleton<ProjectXTradeCopyManagerProvider>(sp =>
         {
-            var manager = new TopstepXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
+            var manager = new ProjectXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
             return manager;
         });
         services.AddSingleton<TopstepConnectionManager>();
 
+        // Legacy configuration for backward compatibility - now handled by vendor service
         services.Configure<ProjectXClientOptions>(options =>
         {
             options.ApiKey = "6p9C6d/G5QMR7UZ/Bfsf2TjzKLLvJQtPqmTt/sVRqZM=";
@@ -105,7 +111,7 @@ public class Startup
             endpoints.MapRazorPages();
         });
 
-        
+
 
         // Apply migrations and ensure database is created
         using (var scope = app.ApplicationServices.CreateScope())

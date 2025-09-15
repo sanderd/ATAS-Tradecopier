@@ -7,11 +7,11 @@ namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.TopstepClientEvents;
 
 public class TopstepClientDisconnectedEventHandler : INotificationHandler<TopstepClientDisconnectedEvent>
 {
-    private readonly TopstepXTradeCopyManagerProvider _provider;
+    private readonly ProjectXTradeCopyManagerProvider _provider;
     private readonly TopstepConnectionManager _manager;
 
     public TopstepClientDisconnectedEventHandler(
-        TopstepXTradeCopyManagerProvider provider,
+        ProjectXTradeCopyManagerProvider provider,
         TopstepConnectionManager manager
     )
     {

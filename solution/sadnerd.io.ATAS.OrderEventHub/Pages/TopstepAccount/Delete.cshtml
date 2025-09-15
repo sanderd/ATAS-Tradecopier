@@ -1,15 +1,17 @@
 ﻿@page "{id}"
 @model sadnerd.io.ATAS.OrderEventHub.Models.Pages.TopstepAccounts.DeleteModel
 @{
-    ViewData["Title"] = "Delete Topstep Account";
+    ViewData["Title"] = "Delete ProjectX Account";
 }
 
-<h1>Delete Topstep Account</h1>
+<h1>Delete ProjectX Account</h1>
 
 <p>Are you sure you want to delete this account?</p>
+<p><strong>Account ID:</strong> @Model.ProjectXAccount?.ProjectXAccountId</p>
+<p><strong>Vendor:</strong> @Model.ProjectXAccount?.Vendor</p>
 
 <form method="post">
-    <input type="hidden" asp-for="TopstepAccount.TopstepAccountId" />
+    <input type="hidden" asp-for="ProjectXAccount.ProjectXAccountId" />
     <button type="submit" class="btn btn-danger">Delete</button>
     <a asp-page="/TopstepAccount/Index" class="btn btn-secondary">Cancel</a>
 </form>

@@ -6,24 +6,24 @@ public class CopyStrategyDeletedEvent : INotification
 {
     public int StrategyId { get; }
     public string AtasAccountId { get; }
-    public string TopstepAccountId { get; }
+    public string ProjectXAccountId { get; }
     public string AtasContract { get; }
-    public string TopstepContract { get; }
+    public string ProjectXContract { get; }
     public int ContractMultiplier { get; }
 
     public CopyStrategyDeletedEvent(
         int strategyId,
         string atasAccountId,
-        string topstepAccountId,
+        string projectXAccountId,
         string atasContract,
-        string topstepContract,
+        string projectXContract,
         int contractMultiplier)
     {
         StrategyId = strategyId;
         AtasAccountId = atasAccountId;
-        TopstepAccountId = topstepAccountId;
+        ProjectXAccountId = projectXAccountId;
         AtasContract = atasContract;
-        TopstepContract = topstepContract;
+        ProjectXContract = projectXContract;
         ContractMultiplier = contractMultiplier;
     }
 }

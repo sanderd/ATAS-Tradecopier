@@ -9,9 +9,9 @@ namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies;
 public class IndexModel : PageModel
 {
     private readonly TradeCopyContext _context;
-    private TopstepXTradeCopyManagerProvider _managerProvider;
+    private ProjectXTradeCopyManagerProvider _managerProvider;
 
-    public IndexModel(TradeCopyContext context, TopstepXTradeCopyManagerProvider managerProvider)
+    public IndexModel(TradeCopyContext context, ProjectXTradeCopyManagerProvider managerProvider)
     {
         _context = context;
         _managerProvider = managerProvider;
@@ -33,8 +33,8 @@ public class IndexModel : PageModel
                 var manager = _managerProvider.GetManager(
                     strategy.AtasAccountId,
                     strategy.AtasContract,
-                    strategy.TopstepAccountId,
-                    strategy.TopstepContract
+                    strategy.ProjectXAccountId,
+                    strategy.ProjectXContract
                 );
 
                 StrategyStatuses.Add(new StrategyStatus
@@ -71,8 +71,8 @@ public class IndexModel : PageModel
             var manager = _managerProvider.GetManager(
                 strategy.AtasAccountId,
                 strategy.AtasContract,
-                strategy.TopstepAccountId,
-                strategy.TopstepContract
+                strategy.ProjectXAccountId,
+                strategy.ProjectXContract
             );
 
             manager.SetState(state); // Clear the error state

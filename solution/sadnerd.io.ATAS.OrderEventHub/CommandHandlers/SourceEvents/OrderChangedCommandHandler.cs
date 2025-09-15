@@ -7,11 +7,11 @@ namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.SourceEvents;
 
 public class OrderChangedCommandHandler : INotificationHandler<OrderChangedEvent>
 {
-    private readonly TopstepXTradeCopyManagerProvider _tradeCopyManager;
+    private readonly ProjectXTradeCopyManagerProvider _tradeCopyManager;
     private readonly ILogger<OrderChangedCommandHandler> _logger;
 
     public OrderChangedCommandHandler(
-        TopstepXTradeCopyManagerProvider tradeCopyManager,
+        ProjectXTradeCopyManagerProvider tradeCopyManager,
         ILogger<OrderChangedCommandHandler> logger
     )
     {
@@ -53,10 +53,10 @@ public class OrderChangedCommandHandler : INotificationHandler<OrderChangedEvent
 
 public class PositionChangedCommandHandler : INotificationHandler<PositionChangedEvent>
 {
-    private readonly TopstepXTradeCopyManagerProvider _tradeCopyManager;
+    private readonly ProjectXTradeCopyManagerProvider _tradeCopyManager;
     private readonly ILogger<PositionChangedCommandHandler> _logger;
     public PositionChangedCommandHandler(
-        TopstepXTradeCopyManagerProvider tradeCopyManager,
+        ProjectXTradeCopyManagerProvider tradeCopyManager,
         ILogger<PositionChangedCommandHandler> logger
     )
     {

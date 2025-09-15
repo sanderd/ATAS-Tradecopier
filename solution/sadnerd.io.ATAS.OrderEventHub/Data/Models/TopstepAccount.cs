@@ -1,6 +1,7 @@
 ﻿namespace sadnerd.io.ATAS.OrderEventHub.Data.Models;
 
-public class TopstepAccount
+public class ProjectXAccount
 {
-    public string TopstepAccountId { get; set; }
+    public string ProjectXAccountId { get; set; }
+    public ProjectXVendor Vendor { get; set; }
 }
