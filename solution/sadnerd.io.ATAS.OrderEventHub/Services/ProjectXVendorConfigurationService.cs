@@ -33,7 +33,7 @@ public class ProjectXVendorConfigurationService : IProjectXVendorConfigurationSe
                 new ProjectXVendorConfiguration
                 {
                     Vendor = ProjectXVendor.LucidTrading,
-                    ApiKey = "egz8Gp4gberhhDrRIZl/7R8JrxEyVrpGg62UySt9ybw=",
+                    ApiKey = "pfy2imxi/9SYt4sRcKoGTnc9lgC81eaDd3WN8ZWC8Zc=",
                     ApiUrl = "https://api.lucidtrading.projectx.com",
                     UserApiUrl = "http://userapi.lucidtrading.projectx.com",
                     ApiUser = "sanderd",
