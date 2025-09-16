@@ -68,8 +68,6 @@ public class Startup
 
         services.AddScoped<CopyStrategyService>();
 
-        services.AddHostedService<TopstepTest>();
-
         services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
             //.ReadFrom.Configuration(builder.Configuration)
             .Enrich.FromLogContext()
