@@ -91,9 +91,9 @@ public class Startup
 
         app.UseRouting();
 
+        // Allow CORS from TopstepX for SignalR connections (used in case of Browser Automation)
         app.UseCors(builder =>
         {
-            builder.WithOrigins("https://www.youtube.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
             builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com").AllowAnyMethod().AllowAnyHeader()
                 .AllowCredentials();
         });
