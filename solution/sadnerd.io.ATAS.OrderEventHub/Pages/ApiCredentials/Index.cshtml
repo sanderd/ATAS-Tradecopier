@@ -1,0 +1,51 @@
+@page
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.ApiCredentials.IndexModel
+@{
+    ViewData["Title"] = "API Credentials";
+}
+
+<h1>ProjectX API Credentials</h1>
+
+<p>
+    <a asp-page="Create" class="btn btn-primary">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Vendor</th>
+            <th>Display Name</th>
+            <th>API User</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ApiCredentials)
+        {
+            <tr>
+                <td>@item.Vendor</td>
+                <td>@item.DisplayName</td>
+                <td>@item.ApiUser</td>
+                <td>
+                    @if (item.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactive</span>
+                    }
+                </td>
+                <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(item.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

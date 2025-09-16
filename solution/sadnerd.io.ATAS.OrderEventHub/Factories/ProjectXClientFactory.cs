@@ -8,6 +8,7 @@ namespace sadnerd.io.ATAS.OrderEventHub.Factories;
 public interface IProjectXClientFactory
 {
     IProjectXClient CreateClient(ProjectXVendor vendor);
+    IProjectXClient CreateClient(ProjectXVendor vendor, int apiCredentialId);
 }
 
 public class ProjectXClientFactory : IProjectXClientFactory
@@ -26,6 +27,17 @@ public class ProjectXClientFactory : IProjectXClientFactory
     public IProjectXClient CreateClient(ProjectXVendor vendor)
     {
         var vendorConfig = _vendorConfigurationService.GetVendorConfiguration(vendor);
+        return CreateClientFromConfiguration(vendorConfig);
+    }
+
+    public IProjectXClient CreateClient(ProjectXVendor vendor, int apiCredentialId)
+    {
+        var vendorConfig = _vendorConfigurationService.GetVendorConfiguration(vendor, apiCredentialId);
+        return CreateClientFromConfiguration(vendorConfig);
+    }
+
+    private IProjectXClient CreateClientFromConfiguration(ProjectXVendorConfiguration vendorConfig)
+    {
         var httpClient = _httpClientFactory.CreateClient();
         
         var options = Options.Create(new ProjectXClientOptions

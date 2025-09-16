@@ -3,13 +3,19 @@
 
 <h1>ProjectX Accounts</h1>
 
-<a asp-page="/TopstepAccount/Create" class="btn btn-primary mb-3">Add New Account</a>
+<p>
+    <a asp-page="/TopstepAccount/Create" class="btn btn-primary mb-3">Add New Account</a>
+    <a asp-page="/ApiCredentials/Index" class="btn btn-outline-secondary mb-3">Manage API Credentials</a>
+</p>
 
 <table class="table">
     <thead>
         <tr>
             <th>Account ID</th>
             <th>Vendor</th>
+            <th>API Credential</th>
+            <th>API User</th>
+            <th>Status</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -20,7 +26,41 @@
                 <td>@account.ProjectXAccountId</td>
                 <td>@account.Vendor</td>
                 <td>
-                    <a asp-page="/TopstepAccount/Delete" asp-route-id="@account.ProjectXAccountId" class="btn btn-danger">Delete</a>
+                    @if (account.ApiCredential != null)
+                    {
+                        <span>@account.ApiCredential.DisplayName</span>
+                    }
+                    else
+                    {
+                        <span class="text-warning">No API credentials assigned</span>
+                    }
+                </td>
+                <td>
+                    @if (account.ApiCredential != null)
+                    {
+                        <span>@account.ApiCredential.ApiUser</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">-</span>
+                    }
+                </td>
+                <td>
+                    @if (account.ApiCredential?.IsActive == true)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else if (account.ApiCredential?.IsActive == false)
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning">No Credentials</span>
+                    }
+                </td>
+                <td>
+                    <a asp-page="/TopstepAccount/Delete" asp-route-id="@account.ProjectXAccountId" class="btn btn-sm btn-outline-danger">Delete</a>
                 </td>
             </tr>
         }

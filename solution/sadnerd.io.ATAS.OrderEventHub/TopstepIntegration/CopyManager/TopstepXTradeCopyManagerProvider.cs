@@ -1,4 +1,6 @@
-﻿using sadnerd.io.ATAS.OrderEventHub.Data.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using sadnerd.io.ATAS.OrderEventHub.Data;
+using sadnerd.io.ATAS.OrderEventHub.Data.Models;
 using sadnerd.io.ATAS.OrderEventHub.Factories;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 using sadnerd.io.ATAS.ProjectXApiClient;
@@ -8,12 +10,12 @@ namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 public class ProjectXTradeCopyManagerProvider
 {
     private readonly IServiceProvider _serviceProvider;
-    private List<(string atasAccountId, string instrument, string projectXAccountId, string projectXInstrument, ProjectXVendor vendor, ProjectXTradeCopyManager manager)> _managers;
+    private List<(string atasAccountId, string instrument, string projectXAccountId, string projectXInstrument, ProjectXVendor vendor, int? apiCredentialId, ProjectXTradeCopyManager manager)> _managers;
 
     public ProjectXTradeCopyManagerProvider(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _managers = new List<(string atasAccountId, string instrument, string projectXAccountId, string projectXInstrument, ProjectXVendor vendor, ProjectXTradeCopyManager manager)>();
+        _managers = new List<(string atasAccountId, string instrument, string projectXAccountId, string projectXInstrument, ProjectXVendor vendor, int? apiCredentialId, ProjectXTradeCopyManager manager)>();
     }
 
     public IEnumerable<ProjectXTradeCopyManager> GetManagers(string atasAccountId, string instrument)
@@ -22,6 +24,24 @@ public class ProjectXTradeCopyManagerProvider
     }
 
     public void AddManager(string atasAccountId, string instrument, string projectXAccount, string projectXInstrument, int contractMultiplier, ProjectXVendor vendor)
+    {
+        // Get the API credential for this ProjectX account
+        using var scope = _serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+        
+        var account = context.ProjectXAccounts
+            .Include(a => a.ApiCredential)
+            .FirstOrDefault(a => a.ProjectXAccountId == projectXAccount);
+
+        if (account?.ApiCredential == null)
+        {
+            throw new InvalidOperationException($"No active API credentials found for ProjectX account {projectXAccount}");
+        }
+
+        AddManagerInternal(atasAccountId, instrument, projectXAccount, projectXInstrument, contractMultiplier, vendor, account.ApiCredentialId);
+    }
+
+    private void AddManagerInternal(string atasAccountId, string instrument, string projectXAccount, string projectXInstrument, int contractMultiplier, ProjectXVendor vendor, int? apiCredentialId)
     {
         if (_managers.Any(x => x.instrument == instrument && x.atasAccountId == atasAccountId && x.projectXAccountId == projectXAccount))
         {
@@ -36,7 +56,16 @@ public class ProjectXTradeCopyManagerProvider
             }
 
             var clientFactory = _serviceProvider.GetRequiredService<IProjectXClientFactory>();
-            var projectXClient = clientFactory.CreateClient(vendor);
+            
+            IProjectXClient projectXClient;
+            if (apiCredentialId.HasValue)
+            {
+                projectXClient = clientFactory.CreateClient(vendor, apiCredentialId.Value);
+            }
+            else
+            {
+                projectXClient = clientFactory.CreateClient(vendor);
+            }
 
             var manager = new ProjectXTradeCopyManager(
                 projectXClient,
@@ -45,7 +74,7 @@ public class ProjectXTradeCopyManagerProvider
                 projectXAccount,
                 projectXInstrument
             );
-            _managers.Add((atasAccountId, instrument, projectXAccount, projectXInstrument, vendor, manager));
+            _managers.Add((atasAccountId, instrument, projectXAccount, projectXInstrument, vendor, apiCredentialId, manager));
         }
     }
 

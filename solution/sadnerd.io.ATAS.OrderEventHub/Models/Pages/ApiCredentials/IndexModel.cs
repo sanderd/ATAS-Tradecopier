@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
 
-namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.TopstepAccounts;
+namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.ApiCredentials;
 
 public class IndexModel : PageModel
 {
@@ -14,12 +14,13 @@ public class IndexModel : PageModel
         _context = context;
     }
 
-    public List<ProjectXAccount> ProjectXAccounts { get; set; } = new();
+    public List<ProjectXApiCredential> ApiCredentials { get; set; } = new();
 
     public async Task OnGetAsync()
     {
-        ProjectXAccounts = await _context.ProjectXAccounts
-            .Include(p => p.ApiCredential)
+        ApiCredentials = await _context.ProjectXApiCredentials
+            .OrderBy(c => c.Vendor)
+            .ThenBy(c => c.DisplayName)
             .ToListAsync();
     }
 }
