@@ -24,14 +24,30 @@ public class CopyStrategyInitializationService : IHostedService
             var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
             var managerProvider = scope.ServiceProvider.GetRequiredService<ProjectXTradeCopyManagerProvider>();
 
-            var strategies = context.CopyStrategies
+            var strategies = await context.CopyStrategies
                 .Include(x => x.ProjectXAccount)
-                .ToList();
+                .ThenInclude(a => a.ApiCredential)
+                .ToListAsync(cancellationToken);
+
+            _logger.LogInformation($"Found {strategies.Count} copy strategies to initialize.");
 
             foreach (var strategy in strategies)
             {
                 try
                 {
+                    // Check if the strategy has valid API credentials before trying to initialize
+                    if (strategy.ProjectXAccount?.ApiCredential == null)
+                    {
+                        _logger.LogWarning($"Strategy {strategy.Id} skipped - no API credentials assigned to ProjectX account {strategy.ProjectXAccountId}");
+                        continue;
+                    }
+
+                    if (!strategy.ProjectXAccount.ApiCredential.IsActive)
+                    {
+                        _logger.LogWarning($"Strategy {strategy.Id} skipped - API credentials are inactive for ProjectX account {strategy.ProjectXAccountId}");
+                        continue;
+                    }
+
                     managerProvider.AddManager(
                         strategy.AtasAccountId,
                         strategy.AtasContract,
@@ -41,15 +57,19 @@ public class CopyStrategyInitializationService : IHostedService
                         strategy.ProjectXAccount.Vendor
                     );
 
-                    _logger.LogInformation($"Initialized manager for strategy {strategy.Id}.");
+                    _logger.LogInformation($"Successfully initialized manager for strategy {strategy.Id}.");
                 }
                 catch (ArgumentException ex)
                 {
                     _logger.LogWarning($"Manager for strategy {strategy.Id} already exists: {ex.Message}");
                 }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogError(ex, $"Failed to initialize manager for strategy {strategy.Id} - missing API credentials or configuration issue.");
+                }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to initialize manager for strategy {strategy.Id}.");
+                    _logger.LogError(ex, $"Unexpected error while initializing manager for strategy {strategy.Id}.");
                 }
             }
         }

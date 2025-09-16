@@ -4,6 +4,13 @@
 
 <h1>Copy Strategies</h1>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
 <a asp-page="/CopyStrategy/Create" class="btn btn-primary mb-3">Add New Strategy</a>
 
 <table class="table">
@@ -15,8 +22,8 @@
         <th>Atas Contract</th>
         <th>ProjectX Contract</th>
         <th>Contract Multiplier</th>
-        <th>Error State</th>
-        <th>Connection Status</th> <!-- New column -->
+        <th>Status</th>
+        <th>Connection Status</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -28,54 +35,83 @@
         <tr>
             <td>@strategy.Id</td>
             <td>@strategy.AtasAccountId</td>
-            <td>@strategy.ProjectXAccountId</td>
+            <td>
+                @strategy.ProjectXAccountId
+                @if (strategy.ProjectXAccount?.ApiCredential == null)
+                {
+                    <br><small class="text-warning">⚠️ No API credentials</small>
+                }
+                else if (strategy.ProjectXAccount.ApiCredential.IsActive == false)
+                {
+                    <br><small class="text-danger">❌ Inactive credentials</small>
+                }
+                else
+                {
+                    <br><small class="text-success">✅ @strategy.ProjectXAccount.ApiCredential.DisplayName</small>
+                }
+            </td>
             <td>@strategy.AtasContract</td>
             <td>@strategy.ProjectXContract</td>
             <td>@strategy.ContractMultiplier</td>
             <td>
                 @if (status?.State == ManagerState.Error)
                 {
-                    <span style="color: red;">Error</span>
+                    <span class="badge bg-danger">Error</span>
+                    @if (!string.IsNullOrEmpty(status.ErrorMessage))
+                    {
+                        <br><small class="text-muted">@status.ErrorMessage</small>
+                    }
                 }
                 else if (status?.State == ManagerState.Enabled)
                 {
-                    <span style="color: green;">Active</span>
+                    <span class="badge bg-success">Active</span>
+                }
+                else if (status?.State == ManagerState.Disabled)
+                {
+                    <span class="badge bg-secondary">Disabled</span>
                 }
                 else
                 {
-                    <span style="color: gray;">Not Running</span>
+                    <span class="badge bg-warning">Not Initialized</span>
                 }
             </td>
             <td>
-                @status?.ConnectionStatus <!-- Display connection status -->
+                @status?.ConnectionStatus
             </td>
             <td>
-                @if (status?.State == ManagerState.Error)
+                @if (status?.State == ManagerState.Error || status?.State == null)
                 {
-                    <form method="post" asp-page-handler="SetState">
+                    @if (strategy.ProjectXAccount?.ApiCredential?.IsActive == true)
+                    {
+                        <form method="post" asp-page-handler="SetState" class="d-inline">
+                            <input type="hidden" name="strategyId" value="@strategy.Id" />
+                            <input type="hidden" name="state" value="@ManagerState.Enabled" />
+                            <button type="submit" class="btn btn-sm btn-success">Initialize & Enable</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-page="/TopstepAccount/Edit" asp-route-id="@strategy.ProjectXAccountId" class="btn btn-sm btn-warning">Fix Credentials</a>
+                    }
+                } 
+                else if (status?.State == ManagerState.Disabled)
+                {
+                    <form method="post" asp-page-handler="SetState" class="d-inline">
                         <input type="hidden" name="strategyId" value="@strategy.Id" />
                         <input type="hidden" name="state" value="@ManagerState.Enabled" />
-                        <button type="submit">Clear Error</button>
-                    </form>
-                } else if (status?.State == ManagerState.Disabled)
-                {
-                    <form method="post" asp-page-handler="SetState">
-                        <input type="hidden" name="strategyId" value="@strategy.Id" />
-                        <input type="hidden" name="state" value="@ManagerState.Enabled" />
-                        <button type="submit">Enable</button>
+                        <button type="submit" class="btn btn-sm btn-success">Enable</button>
                     </form>
                 }
                 else if (status?.State == ManagerState.Enabled)
                 {
-                    <form method="post" asp-page-handler="SetState">
+                    <form method="post" asp-page-handler="SetState" class="d-inline">
                         <input type="hidden" name="strategyId" value="@strategy.Id" />
                         <input type="hidden" name="state" value="@ManagerState.Disabled" />
-                        <button type="submit">Disable</button>
+                        <button type="submit" class="btn btn-sm btn-secondary">Disable</button>
                     </form>
                 }
-            </td>
-            <td>
-                <button class="btn btn-danger" onclick="confirmAndDelete(@strategy.Id)">Delete</button>
+                
+                <button class="btn btn-sm btn-danger ms-1" onclick="confirmAndDelete(@strategy.Id)">Delete</button>
             </td>
         </tr>
     }
