@@ -1,4 +1,5 @@
 ﻿using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
+using sadnerd.io.ATAS.ProjectXApiClient;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
@@ -32,7 +33,13 @@ public class TopstepXTradeCopyManagerProvider
                 throw new ArgumentException("Already exists");
             }
 
-            var manager = new TopstepXTradeCopyManager(_serviceProvider.GetRequiredService<ITopstepBrowserAutomationClient>(), _serviceProvider.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(), contractMultiplier);
+            var manager = new TopstepXTradeCopyManager(
+                _serviceProvider.GetRequiredService<IProjectXClient>(),
+                _serviceProvider.GetRequiredService<ILogger<TopstepXTradeCopyManager>>(),
+                contractMultiplier,
+                topstepAccount,
+                topstepInstrument
+            );
             _managers.Add((atasAccountId, instrument, topstepAccount, topstepInstrument, manager));
         }
     }

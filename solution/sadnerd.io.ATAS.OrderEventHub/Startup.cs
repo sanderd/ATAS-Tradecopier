@@ -8,6 +8,8 @@ using sadnerd.io.ATAS.OrderEventHub.Services;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
+using sadnerd.io.ATAS.ProjectXApiClient;
+using Serilog;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
@@ -43,11 +45,27 @@ public class Startup
         });
         services.AddSingleton<TopstepConnectionManager>();
 
+        services.Configure<ProjectXClientOptions>(options =>
+        {
+            options.ApiKey = "6p9C6d/G5QMR7UZ/Bfsf2TjzKLLvJQtPqmTt/sVRqZM=";
+            options.ApiUrl = "https://api.topstepx.com";
+            options.UserApiUrl = "https://userapi.topstepx.com";
+            options.ApiUser = "sanderd";
+        });
+        services.AddHttpClient<IProjectXClient, ProjectXClient>();
+
         services.AddControllersWithViews();
         services.AddRazorPages();
         services.AddDbContext<TradeCopyContext>();
 
         services.AddScoped<CopyStrategyService>();
+
+        services.AddHostedService<TopstepTest>();
+
+        services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
+            //.ReadFrom.Configuration(builder.Configuration)
+            .Enrich.FromLogContext()
+            .WriteTo.Console());
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -86,6 +104,8 @@ public class Startup
 
             endpoints.MapRazorPages();
         });
+
+        
 
         // Apply migrations and ensure database is created
         using (var scope = app.ApplicationServices.CreateScope())

@@ -1,41 +1,94 @@
-﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
+﻿using System.Diagnostics.Contracts;
+using System.Security.Cryptography.X509Certificates;
+using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
+using sadnerd.io.ATAS.ProjectXApiClient;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
 public class TopstepXTradeCopyManager : IDestinationManager
 {
-    private readonly ITopstepBrowserAutomationClient _topstepBrowserAutomationClient;
+    private readonly IProjectXClient _projectXClient;
     private readonly ILogger<TopstepXTradeCopyManager> _logger;
     private readonly int _contractMultiplier;
-    private TopstepConnection? _connection = null;
+    private readonly string _topstepAccount;
+    private readonly string _topstepContract;
     private List<(string AtasOrderId, string TopstepOrderId)> _orderMap = new();
     private ManagerState _state = ManagerState.Disabled;
 
+    private int? _projectXAccountId = null;
+    private string? _projectXContract = null;
+    private SemaphoreSlim _accountDetailsSemaphore = new(1);
+    private decimal? _lastStoploss = null;
+    private decimal? _lastTakeProfit = null;
+
 
     public TopstepXTradeCopyManager(
-        ITopstepBrowserAutomationClient topstepBrowserAutomationClient,
+        IProjectXClient projectXClient,
         ILogger<TopstepXTradeCopyManager> logger,
-        int contractMultiplier
+        int contractMultiplier,
+        string topstepAccount,
+        string topstepContract
     )
     {
-        _topstepBrowserAutomationClient = topstepBrowserAutomationClient;
+        _projectXClient = projectXClient;
         _logger = logger;
         _contractMultiplier = contractMultiplier;
+        _topstepAccount = topstepAccount;
+        _topstepContract = topstepContract;
     }
 
     public ManagerState State => _state;
 
-    public void SetConnection(TopstepConnection connection)
-    {
-        _connection = connection;
-    }
-
     public bool IsConnected()
     {
-        return _connection?.Status == ConnectionStatus.Connected;
+        return true; // Meh, browser connection no longer required
     }
+
+    public async Task<int> GetProjectXAccountId()
+    {
+        if(_projectXAccountId != null) return _projectXAccountId.Value;
+        
+        await _accountDetailsSemaphore.WaitAsync();
+        try
+        {
+            if (_projectXAccountId == null)
+            {
+                var accounts = await _projectXClient.GetActiveAccounts(CancellationToken.None);
+                _projectXAccountId = accounts.FirstOrDefault(x => x.Name == _topstepAccount)?.Id;
+                return _projectXAccountId ?? throw new NotImplementedException();
+            }
+        }
+        finally
+        {
+            _accountDetailsSemaphore.Release();
+        }
+
+        return _projectXAccountId ?? throw new NotImplementedException();
+    }
+
+    public async Task<string> GetProjectXContract()
+    {
+        if (_projectXContract != null) return _projectXContract;
+
+        await _accountDetailsSemaphore.WaitAsync();
+        try
+        {
+            if (_projectXContract == null)
+            {
+                var contracts = await _projectXClient.GetContracts(_topstepContract, CancellationToken.None);
+                _projectXContract = contracts.FirstOrDefault(x => x.Id.Replace(".", "").EndsWith(_topstepContract))?.Id;
+                return _projectXContract ?? throw new NotImplementedException();
+            }
+        }
+        finally
+        {
+            _accountDetailsSemaphore.Release();
+        }
+
+        return _projectXContract ?? throw new NotImplementedException();
+    }
+    
 
     public async Task MoveOrder()
     {
@@ -54,82 +107,104 @@ public class TopstepXTradeCopyManager : IDestinationManager
             return;
         }
 
-        var result = await _topstepBrowserAutomationClient.CancelOrder(_connection.SignalRConnectionKey, orderMapItem.TopstepOrderId);
+        var accountId = await GetProjectXAccountId();
+        await _projectXClient.CancelOrder(accountId, int.Parse(orderMapItem.TopstepOrderId));
     }
 
     public async Task CreateLimitOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity)
     {
         if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.CreateLimitOrder(_connection.SignalRConnectionKey, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
 
-        if (!result.Success)
-        {
-            _state = ManagerState.Error;
-            _logger.LogCritical("error creating limit order {atasOrderId} ({direction}), {orderprice}, {quantity}", atasOrderId, orderDirection, orderPrice, orderQuantity * _contractMultiplier);
-            return;
-        }
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+        var result = await _projectXClient.CreateLimitOrder(accountId, contract, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
+        
+        if (result == null) throw new NotImplementedException();
 
-        _orderMap.Add((atasOrderId, result.OrderId));
+        _orderMap.Add((atasOrderId, result.Value.ToString()));
     }
 
     public async Task CreateMarketOrder(string atasOrderId, OrderDirection orderDirection, decimal orderQuantity)
     {
         if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.CreateMarketOrder(_connection.SignalRConnectionKey, orderDirection == OrderDirection.Buy ? true : false, (int)orderQuantity * _contractMultiplier);
-    }
 
-    public async Task SetTakeProfit(string atasOrderId, decimal orderPrice)
-    {
-        if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.SetTakeProfit(_connection.SignalRConnectionKey, orderPrice);
-
-        if (!result.Success)
-        {
-            _state = ManagerState.Error;
-            _logger.LogCritical("error setting take profit {atasOrderId} {orderprice}}", atasOrderId, orderPrice);
-            return;
-        }
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+        var result = await _projectXClient.CreateMarketOrder(accountId, contract, orderDirection == OrderDirection.Buy ? true : false, (int)orderQuantity * _contractMultiplier);
     }
 
     public async Task CreateStopOrder(string atasOrderId, OrderDirection orderDirection, decimal orderPrice, decimal orderQuantity)
     {
         if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.CreateStopOrder(_connection.SignalRConnectionKey, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
 
-        if (!result.Success)
-        {
-            _state = ManagerState.Error;
-            _logger.LogCritical("error creating stop order {atasOrderId} ({direction}), {orderprice}, {quantity}", atasOrderId, orderDirection, orderPrice, orderQuantity);
-            return;
-        }
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+        var result = await _projectXClient.CreateStopOrder(accountId, contract, orderDirection == OrderDirection.Buy ? true : false, orderPrice, (int)orderQuantity * _contractMultiplier);
 
-        _orderMap.Add((atasOrderId, result.OrderId));
+        _orderMap.Add((atasOrderId, result.Value.ToString()));
     }
 
     public async Task SetStopLoss(string atasOrderId, decimal orderPrice)
     {
         if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.SetStopLoss(_connection.SignalRConnectionKey, orderPrice);
 
-        if (!result.Success)
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+
+        var openPositions = await _projectXClient.GetPositions(accountId);
+        var openPosition = openPositions.FirstOrDefault(x => x.ContractId == contract);
+
+        if (openPosition == null)
         {
             _state = ManagerState.Error;
-            _logger.LogCritical("error setting stop loss {atasOrderId} {orderprice}}", atasOrderId, orderPrice);
+            _logger.LogCritical("error setting stoploss because no topstep position exists");
             return;
         }
+
+        _lastStoploss = orderPrice;
+        await _projectXClient.SetStoploss(openPosition.Id, _lastStoploss, _lastTakeProfit, CancellationToken.None);
+    }
+
+    public async Task SetTakeProfit(string atasOrderId, decimal orderPrice)
+    {
+        if (!IsConnected() || _state != ManagerState.Enabled) return;
+
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+        
+        var openPositions = await _projectXClient.GetPositions(accountId);
+        var openPosition = openPositions.FirstOrDefault(x => x.ContractId == contract);
+
+        if (openPosition == null)
+        {
+            _state = ManagerState.Error;
+            _logger.LogCritical("error setting stoploss because no topstep position exists");
+            return;
+        }
+        
+        _lastTakeProfit = orderPrice;
+        await _projectXClient.SetStoploss(openPosition.Id, _lastStoploss, _lastTakeProfit, CancellationToken.None);
     }
 
     public async Task FlattenPosition()
     {
         if (!IsConnected() || _state != ManagerState.Enabled) return;
-        var result = await _topstepBrowserAutomationClient.Flatten(_connection.SignalRConnectionKey);
 
-        if (!result.Success)
+        var accountId = await GetProjectXAccountId();
+        var contract = await GetProjectXContract();
+        await _projectXClient.CloseContract(accountId, contract);
+
+        var openOrders = await _projectXClient.GetOpenOrders(accountId);
+        foreach (var order in openOrders.Where(o => o.ContractId == contract))
         {
-            _state = ManagerState.Error;
-            _logger.LogCritical("error flattening position");
-            return;
+            await _projectXClient.CancelOrder(accountId, order.Id);
         }
+
+        // To be sure no orders triggered after closing it the first time
+        await _projectXClient.CloseContract(accountId, contract);
+
+        _lastStoploss = null;
+        _lastTakeProfit = null;
     }
 
     public void SetState(ManagerState state)
