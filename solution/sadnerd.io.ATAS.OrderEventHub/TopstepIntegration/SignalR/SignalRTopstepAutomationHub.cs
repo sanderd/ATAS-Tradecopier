@@ -20,4 +20,10 @@ public class SignalRTopstepAutomationHub : Hub
         var connectionId = Context.ConnectionId;
         await _mediator.Publish(new TopstepClientConnectedEvent(accountName, instrument, connectionId));
     }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        await _mediator.Publish(new TopstepClientDisconnectedEvent(Context.ConnectionId));
+        await base.OnDisconnectedAsync(exception);
+    }
 }

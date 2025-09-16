@@ -40,23 +40,27 @@ public class IndexModel : PageModel
                 StrategyStatuses.Add(new StrategyStatus
                 {
                     StrategyId = strategy.Id,
-                    ErrorState = manager.ErrorState
+                    State = manager.State,
+                    ConnectionStatus = manager.IsConnected() ? "Connected" : "Disconnected" // Assuming this property exists
                 });
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
+                throw;
                 // Log or handle the error if no matching manager is found
-                StrategyStatuses.Add(new StrategyStatus
-                {
-                    StrategyId = strategy.Id,
-                    ErrorState = null // Indicate that the manager is not running
-                });
+                //StrategyStatuses.Add(new StrategyStatus
+                //{
+                //    StrategyId = strategy.Id,
+                //    State = null, // Indicate that the manager is not running
+                //    ConnectionStatus = "Disconnected" // Default to disconnected
+                //});
             }
         }
     }
-    public IActionResult OnPostClearErrorState(int strategyId)
+    public IActionResult OnPostSetState(int strategyId, ManagerState state)
     {
-        var strategy = CopyStrategies.FirstOrDefault(s => s.Id == strategyId);
+        // Fetch the strategy from the database, not from the (empty) CopyStrategies list
+        var strategy = _context.CopyStrategies.FirstOrDefault(s => s.Id == strategyId);
         if (strategy == null)
         {
             return NotFound();
@@ -71,7 +75,7 @@ public class IndexModel : PageModel
                 strategy.TopstepContract
             );
 
-            manager.ClearErrorState(); // Clear the error state
+            manager.SetState(state); // Clear the error state
             return RedirectToPage(); // Refresh the page
         }
         catch (InvalidOperationException)
@@ -84,6 +88,7 @@ public class IndexModel : PageModel
     public class StrategyStatus
     {
         public int StrategyId { get; set; }
-        public bool? ErrorState { get; set; } // Null indicates the manager is not running
+        public ManagerState State { get; set; } // Null indicates the manager is not running
+        public string ConnectionStatus { get; set; } = "Unknown"; // Default to unknown
     }
 }

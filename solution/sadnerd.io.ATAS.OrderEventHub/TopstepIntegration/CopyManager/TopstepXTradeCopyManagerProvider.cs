@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
+﻿using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 
 namespace sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 

@@ -1,4 +1,5 @@
 ﻿@page
+@using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager
 @model sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies.IndexModel
 
 <h1>Copy Strategies</h1>
@@ -15,6 +16,7 @@
         <th>Topstep Contract</th>
         <th>Contract Multiplier</th>
         <th>Error State</th>
+        <th>Connection Status</th> <!-- New column -->
         <th>Actions</th>
     </tr>
     </thead>
@@ -31,11 +33,11 @@
             <td>@strategy.TopstepContract</td>
             <td>@strategy.ContractMultiplier</td>
             <td>
-                @if (status?.ErrorState == true)
+                @if (status?.State == ManagerState.Error)
                 {
                     <span style="color: red;">Error</span>
                 }
-                else if (status?.ErrorState == false)
+                else if (status?.State == ManagerState.Enabled)
                 {
                     <span style="color: green;">Active</span>
                 }
@@ -45,11 +47,30 @@
                 }
             </td>
             <td>
-                @if (status?.ErrorState == true)
+                @status?.ConnectionStatus <!-- Display connection status -->
+            </td>
+            <td>
+                @if (status?.State == ManagerState.Error)
                 {
-                    <form method="post" asp-page-handler="ClearErrorState">
+                    <form method="post" asp-page-handler="SetState">
                         <input type="hidden" name="strategyId" value="@strategy.Id" />
+                        <input type="hidden" name="state" value="@ManagerState.Enabled" />
                         <button type="submit">Clear Error</button>
+                    </form>
+                } else if (status?.State == ManagerState.Disabled)
+                {
+                    <form method="post" asp-page-handler="SetState">
+                        <input type="hidden" name="strategyId" value="@strategy.Id" />
+                        <input type="hidden" name="state" value="@ManagerState.Enabled" />
+                        <button type="submit">Enable</button>
+                    </form>
+                }
+                else if (status?.State == ManagerState.Enabled)
+                {
+                    <form method="post" asp-page-handler="SetState">
+                        <input type="hidden" name="strategyId" value="@strategy.Id" />
+                        <input type="hidden" name="state" value="@ManagerState.Disabled" />
+                        <button type="submit">Disable</button>
                     </form>
                 }
             </td>

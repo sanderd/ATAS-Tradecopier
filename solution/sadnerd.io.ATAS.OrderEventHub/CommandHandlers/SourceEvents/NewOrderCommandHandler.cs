@@ -1,10 +1,9 @@
 ﻿using MediatR;
-using Microsoft.Extensions.Logging;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
 using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
 
-namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers;
+namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.SourceEvents;
 
 public class NewOrderCommandHandler : INotificationHandler<NewOrderEvent>
 {
