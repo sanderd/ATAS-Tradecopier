@@ -9,7 +9,7 @@ using sadnerd.io.ATAS.OrderEventHub.Data;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Migrations
 {
-    [DbContext(typeof(TradeCopyContext))]
+    [DbContext(typeof(OrderEventHubDbContext))]
     [Migration("20250915000638_ProjectXVendorSupport")]
     partial class ProjectXVendorSupport
     {

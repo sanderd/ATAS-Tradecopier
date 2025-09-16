@@ -1,21 +1,20 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data;
-using sadnerd.io.ATAS.OrderEventHub.Data.Models;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.Application;
 
 public class CopyStrategyAddedEventHandler : INotificationHandler<CopyStrategyAddedEvent>
 {
     private readonly ProjectXTradeCopyManagerProvider _provider;
-    private readonly TradeCopyContext _dbContext;
+    private readonly OrderEventHubDbContext _dbContext;
     private readonly ILogger<CopyStrategyAddedEventHandler> _logger;
 
     public CopyStrategyAddedEventHandler(
         ProjectXTradeCopyManagerProvider provider,
-        TradeCopyContext dbContext,
+        OrderEventHubDbContext dbContext,
         ILogger<CopyStrategyAddedEventHandler> logger
     )
     {

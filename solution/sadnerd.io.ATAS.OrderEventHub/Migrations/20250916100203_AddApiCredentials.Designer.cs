@@ -10,7 +10,7 @@ using sadnerd.io.ATAS.OrderEventHub.Data;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Migrations
 {
-    [DbContext(typeof(TradeCopyContext))]
+    [DbContext(typeof(OrderEventHubDbContext))]
     [Migration("20250916100203_AddApiCredentials")]
     partial class AddApiCredentials
     {

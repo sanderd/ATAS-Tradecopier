@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using sadnerd.io.ATAS.OrderEventHub.Models;
 
 namespace WebApplication2.Controllers;

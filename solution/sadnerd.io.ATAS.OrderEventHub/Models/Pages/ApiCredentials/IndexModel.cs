@@ -7,9 +7,9 @@ namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.ApiCredentials;
 
 public class IndexModel : PageModel
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
 
-    public IndexModel(TradeCopyContext context)
+    public IndexModel(OrderEventHubDbContext context)
     {
         _context = context;
     }

@@ -1,5 +1,5 @@
 ﻿@page "{id}"
-@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.TopstepAccounts.DeleteModel
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.ProjectXAccounts.DeleteModel
 @{
     ViewData["Title"] = "Delete ProjectX Account";
 }
@@ -13,5 +13,5 @@
 <form method="post">
     <input type="hidden" asp-for="ProjectXAccount.ProjectXAccountId" />
     <button type="submit" class="btn btn-danger">Delete</button>
-    <a asp-page="/TopstepAccount/Index" class="btn btn-secondary">Cancel</a>
+    <a asp-page="/ProjectXAccountIndex" class="btn btn-secondary">Cancel</a>
 </form>

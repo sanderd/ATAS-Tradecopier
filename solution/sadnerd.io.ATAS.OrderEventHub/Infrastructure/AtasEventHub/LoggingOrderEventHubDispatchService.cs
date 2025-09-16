@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
+﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;

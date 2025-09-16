@@ -8,9 +8,9 @@ namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.ApiCredentials;
 
 public class DeleteModel : PageModel
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
 
-    public DeleteModel(TradeCopyContext context)
+    public DeleteModel(OrderEventHubDbContext context)
     {
         _context = context;
     }

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Services;
 
@@ -21,7 +21,7 @@ public class CopyStrategyInitializationService : IHostedService
 
         using (var scope = _serviceProvider.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+            var context = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
             var managerProvider = scope.ServiceProvider.GetRequiredService<ProjectXTradeCopyManagerProvider>();
 
             var strategies = await context.CopyStrategies

@@ -1,5 +1,5 @@
 ﻿using System.Threading.Channels;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Atas;
 
 internal sealed class InMemoryMessageQueue
 {

@@ -7,12 +7,12 @@ namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.AtasAccounts;
 
 public class DeleteModel : PageModel
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
 
     [BindProperty]
     public AtasAccount AtasAccount { get; set; }
 
-    public DeleteModel(TradeCopyContext context)
+    public DeleteModel(OrderEventHubDbContext context)
     {
         _context = context;
     }

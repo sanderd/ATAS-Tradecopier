@@ -52,7 +52,7 @@ public class ProjectXVendorConfigurationService : IProjectXVendorConfigurationSe
     {
         // Get the first active API credential for this vendor
         using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+        var context = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
         
         var apiCredential = context.ProjectXApiCredentials
             .Where(c => c.Vendor == vendor && c.IsActive)
@@ -70,7 +70,7 @@ public class ProjectXVendorConfigurationService : IProjectXVendorConfigurationSe
     public ProjectXVendorConfiguration GetVendorConfiguration(ProjectXVendor vendor, int apiCredentialId)
     {
         using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+        var context = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
         
         var apiCredential = context.ProjectXApiCredentials
             .Where(c => c.Id == apiCredentialId && c.Vendor == vendor && c.IsActive)
@@ -87,7 +87,7 @@ public class ProjectXVendorConfigurationService : IProjectXVendorConfigurationSe
     public IEnumerable<ProjectXVendorConfiguration> GetAllVendorConfigurations()
     {
         using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+        var context = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
         
         var configs = new List<ProjectXVendorConfiguration>();
         
@@ -110,7 +110,7 @@ public class ProjectXVendorConfigurationService : IProjectXVendorConfigurationSe
     public async Task<ProjectXApiCredential?> GetApiCredentialAsync(int id)
     {
         using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+        var context = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
         
         return await context.ProjectXApiCredentials
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -119,7 +119,7 @@ public class ProjectXVendorConfigurationService : IProjectXVendorConfigurationSe
     public async Task<IEnumerable<ProjectXApiCredential>> GetApiCredentialsForVendorAsync(ProjectXVendor vendor)
     {
         using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+        var context = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
         
         return await context.ProjectXApiCredentials
             .Where(c => c.Vendor == vendor)

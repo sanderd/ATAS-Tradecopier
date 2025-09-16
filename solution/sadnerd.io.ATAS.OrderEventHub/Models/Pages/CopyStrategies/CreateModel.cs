@@ -3,17 +3,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies;
 
 public class CreateModel : PageModel
 {
     private readonly CopyStrategyService _copyStrategyService;
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
 
-    public CreateModel(CopyStrategyService copyStrategyService, TradeCopyContext context)
+    public CreateModel(CopyStrategyService copyStrategyService, OrderEventHubDbContext context)
     {
         _copyStrategyService = copyStrategyService;
         _context = context;

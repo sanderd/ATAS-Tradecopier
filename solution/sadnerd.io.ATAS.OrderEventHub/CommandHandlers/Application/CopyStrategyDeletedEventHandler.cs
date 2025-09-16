@@ -1,5 +1,5 @@
 using MediatR;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.Application;
 

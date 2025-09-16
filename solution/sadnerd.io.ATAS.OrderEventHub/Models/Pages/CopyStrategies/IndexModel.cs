@@ -3,16 +3,16 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies;
 
 public class IndexModel : PageModel
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
     private ProjectXTradeCopyManagerProvider _managerProvider;
 
-    public IndexModel(TradeCopyContext context, ProjectXTradeCopyManagerProvider managerProvider)
+    public IndexModel(OrderEventHubDbContext context, ProjectXTradeCopyManagerProvider managerProvider)
     {
         _context = context;
         _managerProvider = managerProvider;

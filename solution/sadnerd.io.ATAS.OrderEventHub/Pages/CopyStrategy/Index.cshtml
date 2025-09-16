@@ -1,5 +1,5 @@
 ﻿@page
-@using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager
+@using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager
 @model sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies.IndexModel
 
 <h1>Copy Strategies</h1>
@@ -91,7 +91,7 @@
                     }
                     else
                     {
-                        <a asp-page="/TopstepAccount/Edit" asp-route-id="@strategy.ProjectXAccountId" class="btn btn-sm btn-warning">Fix Credentials</a>
+                        <a asp-page="/ProjectXAccountEdit" asp-route-id="@strategy.ProjectXAccountId" class="btn btn-sm btn-warning">Fix Credentials</a>
                     }
                 } 
                 else if (status?.State == ManagerState.Disabled)

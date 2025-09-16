@@ -1,5 +1,3 @@
-using sadnerd.io.ATAS.OrderEventHub.Data.Models;
-
 namespace sadnerd.io.ATAS.OrderEventHub.Data.Models;
 
 public class ProjectXApiCredential

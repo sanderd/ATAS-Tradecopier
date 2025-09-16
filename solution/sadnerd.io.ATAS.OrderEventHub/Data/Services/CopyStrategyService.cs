@@ -1,16 +1,16 @@
 ﻿using MediatR;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Data.Services;
 
 public class CopyStrategyService
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
     private readonly IMediator _mediator;
 
     public CopyStrategyService(
-        TradeCopyContext context, 
+        OrderEventHubDbContext context, 
         IMediator mediator
     )
     {

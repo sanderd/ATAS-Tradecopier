@@ -1,8 +1,5 @@
 ﻿using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Atas;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 

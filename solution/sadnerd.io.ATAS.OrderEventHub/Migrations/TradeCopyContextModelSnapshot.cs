@@ -9,7 +9,7 @@ using sadnerd.io.ATAS.OrderEventHub.Data;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Migrations
 {
-    [DbContext(typeof(TradeCopyContext))]
+    [DbContext(typeof(OrderEventHubDbContext))]
     partial class TradeCopyContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

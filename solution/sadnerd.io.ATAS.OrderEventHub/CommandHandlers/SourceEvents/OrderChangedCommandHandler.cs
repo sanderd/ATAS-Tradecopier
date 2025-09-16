@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Atas;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.SourceEvents;
 

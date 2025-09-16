@@ -5,12 +5,6 @@ using sadnerd.io.ATAS.ProjectXApiClient;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Factories;
 
-public interface IProjectXClientFactory
-{
-    IProjectXClient CreateClient(ProjectXVendor vendor);
-    IProjectXClient CreateClient(ProjectXVendor vendor, int apiCredentialId);
-}
-
 public class ProjectXClientFactory : IProjectXClientFactory
 {
     private readonly IHttpClientFactory _httpClientFactory;

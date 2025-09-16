@@ -1,18 +1,18 @@
 ﻿using MediatR;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.BrowserAutomation;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.ConnectionManagement;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.TopstepClientEvents;
 
 public class TopstepClientConnectedEventHandler : INotificationHandler<TopstepClientConnectedEvent>
 {
     private readonly ProjectXTradeCopyManagerProvider _provider;
-    private readonly TopstepConnectionManager _manager;
+    private readonly TopstepBrowserConnectionManager _manager;
 
     public TopstepClientConnectedEventHandler(
         ProjectXTradeCopyManagerProvider provider,
-        TopstepConnectionManager manager
+        TopstepBrowserConnectionManager manager
     )
     {
         _provider = provider;

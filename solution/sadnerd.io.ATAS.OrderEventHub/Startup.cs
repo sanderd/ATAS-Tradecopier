@@ -5,10 +5,10 @@ using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Factories;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.ConnectionManagement;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.SignalR;
 using sadnerd.io.ATAS.OrderEventHub.Services;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 using sadnerd.io.ATAS.ProjectXApiClient;
 using Serilog;
 
@@ -37,7 +37,7 @@ public class Startup
         services.AddHostedService<IntegrationEventProcessorJob>();
         services.AddSingleton<InMemoryMessageQueue>();
         services.AddSingleton<IEventBus, EventBus>();
-        services.AddTransient<ITopstepBrowserAutomationClient, TopstepBrowserAutomationClient>();
+        services.AddTransient<IProjectXBrowserAutomationClient, ProjectXBrowserAutomationClient>();
 
         // Add ProjectX vendor configuration service
         services.AddSingleton<IProjectXVendorConfigurationService, ProjectXVendorConfigurationService>();
@@ -48,7 +48,9 @@ public class Startup
             var manager = new ProjectXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
             return manager;
         });
-        services.AddSingleton<TopstepConnectionManager>();
+
+        // NOTE: No longer in use
+        services.AddSingleton<TopstepBrowserConnectionManager>();
 
         // Legacy configuration for backward compatibility - now handled by vendor service
         services.Configure<ProjectXClientOptions>(options =>
@@ -62,7 +64,7 @@ public class Startup
 
         services.AddControllersWithViews();
         services.AddRazorPages();
-        services.AddDbContext<TradeCopyContext>();
+        services.AddDbContext<OrderEventHubDbContext>();
 
         services.AddScoped<CopyStrategyService>();
 
@@ -102,7 +104,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<SignalRTopstepAutomationHub>("/topstepxhub");
+            endpoints.MapHub<SignalRProjectXAutomationHub>("/topstepxhub");
 
             endpoints.MapControllerRoute(
                 name: "default",
@@ -111,12 +113,10 @@ public class Startup
             endpoints.MapRazorPages();
         });
 
-
-
         // Apply migrations and ensure database is created
         using (var scope = app.ApplicationServices.CreateScope())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
             dbContext.Database.Migrate();
         }
     }

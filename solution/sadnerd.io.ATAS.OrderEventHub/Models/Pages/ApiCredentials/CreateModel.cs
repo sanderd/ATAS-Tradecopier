@@ -8,9 +8,9 @@ namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.ApiCredentials;
 
 public class CreateModel : PageModel
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
 
-    public CreateModel(TradeCopyContext context)
+    public CreateModel(OrderEventHubDbContext context)
     {
         _context = context;
     }

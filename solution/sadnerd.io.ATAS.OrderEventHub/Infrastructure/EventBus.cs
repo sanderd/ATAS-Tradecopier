@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+﻿using Newtonsoft.Json;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Atas;
 
 internal sealed class EventBus : IEventBus
 {
