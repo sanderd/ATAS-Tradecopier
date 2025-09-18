@@ -5,6 +5,10 @@ using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Factories;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
+using sadnerd.io.ATAS.OrderEventHub.Infrastructure.FeatureFlags;
+using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications;
+using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications.SignalR;
+using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications.Sinks;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.SignalR;
@@ -29,6 +33,14 @@ public class Startup
         services.AddHostedService<ServiceWireWorker>();
         services.AddHostedService<CopyStrategyInitializationService>();
         services.AddCors();
+
+        // Feature Flags
+        services.AddSingleton<IFeatureFlagService, ConfigurationFeatureFlagService>();
+
+        // Notification Infrastructure
+        services.AddSingleton<INotificationService, NotificationService>();
+        services.AddSingleton<INotificationSink, ConsoleLoggingSink>();
+        services.AddSingleton<INotificationSink, SignalRNotificationSink>();
 
         services.AddSingleton<IOrderEventHubDispatchService, EventBusPassthroughEventHubDispatchService>();
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Startup>());
@@ -103,6 +115,7 @@ public class Startup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<SignalRProjectXAutomationHub>("/topstepxhub");
+            endpoints.MapHub<NotificationHub>("/notificationhub");
 
             endpoints.MapControllerRoute(
                 name: "default",
@@ -110,6 +123,18 @@ public class Startup
 
             endpoints.MapRazorPages();
         });
+
+        // Initialize notification sinks
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+            var sinks = scope.ServiceProvider.GetServices<INotificationSink>();
+            
+            foreach (var sink in sinks)
+            {
+                notificationService.AddSink(sink);
+            }
+        }
 
         // Apply migrations and ensure database is created
         using (var scope = app.ApplicationServices.CreateScope())
