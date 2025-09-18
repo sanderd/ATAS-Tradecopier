@@ -11,6 +11,13 @@
     </div>
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
 <a asp-page="/CopyStrategy/Create" class="btn btn-primary mb-3">Add New Strategy</a>
 
 <table class="table">
@@ -31,6 +38,7 @@
     @foreach (var strategy in Model.CopyStrategies)
     {
         var status = Model.StrategyStatuses.FirstOrDefault(s => s.StrategyId == strategy.Id);
+        var isActive = status?.State == ManagerState.Enabled;
 
         <tr>
             <td>@strategy.Id</td>
@@ -111,7 +119,12 @@
                     </form>
                 }
                 
-                <button class="btn btn-sm btn-danger ms-1" onclick="confirmAndDelete(@strategy.Id)">Delete</button>
+                @if (!isActive)
+                {
+                    <a asp-page="/CopyStrategy/Edit" asp-route-id="@strategy.Id" class="btn btn-sm btn-primary ms-1">Edit</a>
+                }
+                
+                <button class="btn btn-sm btn-danger ms-1" onclick="confirmAndDelete(@strategy.Id)" @(isActive ? "disabled title='Cannot delete an active strategy'" : "")>Delete</button>
             </td>
         </tr>
     }

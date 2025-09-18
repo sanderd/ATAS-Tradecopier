@@ -1,14 +1,19 @@
 using MediatR;
 using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.Application;
 
 public class CopyStrategyDeletedEventHandler : INotificationHandler<CopyStrategyDeletedEvent>
 {
+    private readonly ProjectXTradeCopyManagerProvider _managerProvider;
     private readonly ILogger<CopyStrategyDeletedEventHandler> _logger;
 
-    public CopyStrategyDeletedEventHandler(ILogger<CopyStrategyDeletedEventHandler> logger)
+    public CopyStrategyDeletedEventHandler(
+        ProjectXTradeCopyManagerProvider managerProvider,
+        ILogger<CopyStrategyDeletedEventHandler> logger)
     {
+        _managerProvider = managerProvider;
         _logger = logger;
     }
 
@@ -24,9 +29,22 @@ public class CopyStrategyDeletedEventHandler : INotificationHandler<CopyStrategy
             notification.ContractMultiplier
         );
 
-        throw new NotImplementedException();
+        try
+        {
+            _managerProvider.RemoveManager(
+                notification.AtasAccountId,
+                notification.AtasContract,
+                notification.ProjectXAccountId,
+                notification.ProjectXContract
+            );
 
-        // Additional logic (e.g., notifying other systems) can go here
+            _logger.LogInformation("Successfully removed manager for deleted strategy {StrategyId}", notification.StrategyId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to remove manager for deleted strategy {StrategyId}", notification.StrategyId);
+        }
+
         return Task.CompletedTask;
     }
 }

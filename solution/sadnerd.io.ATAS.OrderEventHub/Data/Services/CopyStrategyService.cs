@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
 using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
 
@@ -66,5 +67,45 @@ public class CopyStrategyService
 
         // Publish the deletion event with the original data
         await _mediator.Publish(deletedEvent, CancellationToken.None);
+    }
+
+    public async Task UpdateStrategy(
+        int strategyId,
+        string atasAccountId, 
+        string projectXAccountId, 
+        string atasContract,
+        string projectXContract, 
+        int contractMultiplier,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var strategy = await _context.CopyStrategies.FindAsync(new object[] { strategyId }, cancellationToken);
+        if (strategy == null)
+        {
+            throw new KeyNotFoundException($"CopyStrategy with ID {strategyId} not found.");
+        }
+
+        // Capture the original data before update
+        var originalData = new CopyStrategyDeletedEvent(
+            strategy.Id,
+            strategy.AtasAccountId,
+            strategy.ProjectXAccountId,
+            strategy.AtasContract,
+            strategy.ProjectXContract,
+            strategy.ContractMultiplier
+        );
+
+        // Update the strategy
+        strategy.AtasAccountId = atasAccountId;
+        strategy.ProjectXAccountId = projectXAccountId;
+        strategy.AtasContract = atasContract;
+        strategy.ProjectXContract = projectXContract;
+        strategy.ContractMultiplier = contractMultiplier;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        // Remove the old manager and add the new one
+        await _mediator.Publish(originalData, CancellationToken.None);
+        await _mediator.Publish(new CopyStrategyAddedEvent(strategy.Id), CancellationToken.None);
     }
 }

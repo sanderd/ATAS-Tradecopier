@@ -1,0 +1,62 @@
+@page "{id:int}"
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies.EditModel
+
+<h1>Edit Copy Strategy</h1>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+    
+    <div class="mb-3">
+        <label asp-for="AtasAccountId" class="form-label">Atas Account</label>
+        <select asp-for="AtasAccountId" class="form-select" required>
+            <option value="">Select Atas Account</option>
+            @foreach (var account in Model.AtasAccounts)
+            {
+                <option value="@account.AtasAccountId">@account.AtasAccountId</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ProjectXAccountId" class="form-label">ProjectX Account</label>
+        <select asp-for="ProjectXAccountId" class="form-select" required>
+            <option value="">Select ProjectX Account</option>
+            @foreach (var account in Model.ProjectXAccounts)
+            {
+                <option value="@account.ProjectXAccountId">@account.ProjectXAccountId</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="AtasContract" class="form-label">Atas Contract</label>
+        <input asp-for="AtasContract" type="text" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ProjectXContract" class="form-label">ProjectX Contract</label>
+        <input asp-for="ProjectXContract" type="text" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ContractMultiplier" class="form-label">Contract Multiplier</label>
+        <input asp-for="ContractMultiplier" type="number" class="form-control" min="1" required />
+    </div>
+
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Update Strategy</button>
+        <a asp-page="/CopyStrategy/Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
