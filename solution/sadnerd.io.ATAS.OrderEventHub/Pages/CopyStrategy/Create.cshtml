@@ -4,32 +4,120 @@
     ViewData["Title"] = "Add Copy Strategy";
 }
 
-<h1>Add Copy Strategy</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-plus-circle me-2"></i>Add Copy Strategy</h1>
+    <a asp-page="/CopyStrategy/Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Strategies
+    </a>
+</div>
 
-<form method="post">
-    <div class="form-group">
-        <label for="AtasAccountId">Atas Account</label>
-        <select class="form-control" id="AtasAccountId" name="AtasAccountId" asp-for="AtasAccountId" asp-items="@(new SelectList(Model.AtasAccounts, "AtasAccountId", "AtasAccountId"))">
-            <option value="">-- Select Atas Account --</option>
-        </select>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Please correct the following errors:</strong>
+        <ul class="mb-0 mt-2">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="form-group">
-        <label for="ProjectXAccountId">ProjectX Account</label>
-        <select class="form-control" id="ProjectXAccountId" name="ProjectXAccountId" asp-for="ProjectXAccountId" asp-items="@(new SelectList(Model.ProjectXAccounts, "ProjectXAccountId", "ProjectXAccountId"))">
-            <option value="">-- Select ProjectX Account --</option>
-        </select>
+}
+
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-cog me-2"></i>Strategy Configuration</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="AtasAccountId" class="form-label">
+                            <i class="fas fa-user me-1"></i>Atas Account
+                        </label>
+                        <select class="form-select" id="AtasAccountId" name="AtasAccountId" asp-for="AtasAccountId" required>
+                            <option value="">-- Select Atas Account --</option>
+                            @foreach (var account in Model.AtasAccounts)
+                            {
+                                <option value="@account.AtasAccountId">@account.AtasAccountId</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ProjectXAccountId" class="form-label">
+                            <i class="fas fa-external-link-alt me-1"></i>ProjectX Account
+                        </label>
+                        <select class="form-select" id="ProjectXAccountId" name="ProjectXAccountId" asp-for="ProjectXAccountId" required>
+                            <option value="">-- Select ProjectX Account --</option>
+                            @foreach (var account in Model.ProjectXAccounts)
+                            {
+                                <option value="@account.ProjectXAccountId">@account.ProjectXAccountId</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="AtasContract" class="form-label">
+                                    <i class="fas fa-file-contract me-1"></i>Atas Contract
+                                </label>
+                                <input type="text" class="form-control" id="AtasContract" name="AtasContract" asp-for="AtasContract" placeholder="e.g., ES 03-25" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ProjectXContract" class="form-label">
+                                    <i class="fas fa-file-contract me-1"></i>ProjectX Contract
+                                </label>
+                                <input type="text" class="form-control" id="ProjectXContract" name="ProjectXContract" asp-for="ProjectXContract" placeholder="e.g., ES 03-25" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="ContractMultiplier" class="form-label">
+                            <i class="fas fa-times me-1"></i>Contract Multiplier
+                        </label>
+                        <input type="number" class="form-control" id="ContractMultiplier" name="ContractMultiplier" asp-for="ContractMultiplier" min="1" value="1" required />
+                        <div class="form-text">Number of contracts to trade for each source contract</div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-page="/CopyStrategy/Index" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i>Create Strategy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="AtasContract">Atas Contract</label>
-        <input type="text" class="form-control" id="AtasContract" name="AtasContract" asp-for="AtasContract" required />
+    <div class="col-md-4 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Help</h5>
+            </div>
+            <div class="card-body">
+                <h6><i class="fas fa-lightbulb me-1"></i>How it works:</h6>
+                <ul class="small">
+                    <li>Select source and destination accounts</li>
+                    <li>Map contracts between platforms</li>
+                    <li>Set the contract multiplier for position sizing</li>
+                    <li>Trades from the Atas account will be copied to ProjectX</li>
+                </ul>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    <small>Make sure both accounts are properly configured and have active API credentials before creating the strategy.</small>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="ProjectXContract">ProjectX Contract</label>
-        <input type="text" class="form-control" id="ProjectXContract" name="ProjectXContract" asp-for="ProjectXContract" required />
-    </div>
-    <div class="form-group">
-        <label for="ContractMultiplier">Contract Multiplier</label>
-        <input type="number" class="form-control" id="ContractMultiplier" name="ContractMultiplier" asp-for="ContractMultiplier" required />
-    </div>
-    <button type="submit" class="btn btn-primary">Add</button>
-</form>
+</div>
