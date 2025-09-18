@@ -123,7 +123,7 @@ class NotificationManager {
         try {
             const response = await fetch('/api/notifications?count=20');
             const notifications = await response.json();
-            this.notifications = notifications;
+            this.notifications = notifications || [];
             this.updateUI();
         } catch (err) {
             console.error("Failed to load existing notifications:", err);
@@ -131,6 +131,21 @@ class NotificationManager {
     }
 
     handleNotification(notification) {
+        // Ensure notification has required properties
+        if (!notification || !notification.Title || !notification.Message) {
+            console.warn("Received invalid notification:", notification);
+            return;
+        }
+
+        // Ensure Severity is a string
+        if (typeof notification.Severity === 'number') {
+            // Convert enum number to string
+            const severityMap = { 0: 'Info', 1: 'Warning', 2: 'Error', 3: 'Critical' };
+            notification.Severity = severityMap[notification.Severity] || 'Info';
+        } else if (!notification.Severity) {
+            notification.Severity = 'Info';
+        }
+
         this.notifications.unshift(notification);
         
         // Keep only recent notifications in memory
@@ -174,18 +189,26 @@ class NotificationManager {
         }
 
         const recentNotifications = this.notifications.slice(0, this.settings.maxNotificationsDisplay);
-        const html = recentNotifications.map(notification => `
-            <div class="dropdown-item notification-item severity-${notification.Severity.toLowerCase()}">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="flex-grow-1">
-                        <h6 class="dropdown-header mb-1 text-${this.getSeverityColor(notification.Severity)}">${notification.Title}</h6>
-                        <p class="mb-1 small">${notification.Message}</p>
-                        <small class="text-muted">${this.formatTimestamp(notification.Timestamp)}</small>
+        const html = recentNotifications.map(notification => {
+            // Defensive checks for notification properties
+            const severity = notification.Severity || 'Info';
+            const title = notification.Title || 'Notification';
+            const message = notification.Message || 'No message';
+            const timestamp = notification.Timestamp || new Date().toISOString();
+            
+            return `
+                <div class="dropdown-item notification-item severity-${severity.toLowerCase()}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="dropdown-header mb-1 text-${this.getSeverityColor(severity)}">${title}</h6>
+                            <p class="mb-1 small">${message}</p>
+                            <small class="text-muted">${this.formatTimestamp(timestamp)}</small>
+                        </div>
+                        <span class="badge bg-${this.getSeverityColor(severity)}">${severity}</span>
                     </div>
-                    <span class="badge bg-${this.getSeverityColor(notification.Severity)}">${notification.Severity}</span>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         container.innerHTML = html;
 
@@ -211,27 +234,31 @@ class NotificationManager {
     }
 
     formatTimestamp(timestamp) {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
+        try {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
-        
-        return date.toLocaleDateString();
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            
+            return date.toLocaleDateString();
+        } catch (err) {
+            return 'Unknown time';
+        }
     }
 
     playSound(severity) {
         if (!this.settings.soundEnabled || !this.audioContext || !this.soundBuffers) return;
 
         try {
-            const soundName = severity.toLowerCase();
-            const buffer = this.soundBuffers[soundName];
+            const soundName = (severity || 'info').toLowerCase();
+            const buffer = this.soundBuffers[soundName] || this.soundBuffers['info'];
             
             if (buffer) {
                 const source = this.audioContext.createBufferSource();
@@ -252,8 +279,11 @@ class NotificationManager {
         }
 
         try {
-            const browserNotification = new Notification(notification.Title, {
-                body: notification.Message,
+            const title = notification.Title || 'Notification';
+            const message = notification.Message || 'No message';
+            
+            const browserNotification = new Notification(title, {
+                body: message,
                 icon: '/favicon.ico',
                 tag: notification.Id,
                 badge: '/favicon.ico'

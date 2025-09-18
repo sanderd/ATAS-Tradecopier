@@ -30,7 +30,19 @@ public class NotificationsController : ControllerBase
             ? _notificationService.GetRecentNotifications(count.Value)
             : _notificationService.GetNotifications(severityEnum, since);
 
-        return Ok(notifications);
+        // Transform notifications to ensure consistent serialization
+        var transformedNotifications = notifications.Select(n => new
+        {
+            n.Id,
+            n.Title,
+            n.Message,
+            Severity = n.Severity.ToString(), // Ensure severity is always a string
+            n.Timestamp,
+            n.Source,
+            n.Metadata
+        });
+
+        return Ok(transformedNotifications);
     }
 
     [HttpDelete]

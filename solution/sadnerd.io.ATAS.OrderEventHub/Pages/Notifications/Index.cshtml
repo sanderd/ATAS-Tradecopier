@@ -198,33 +198,43 @@
             const searchFilter = document.getElementById('search-filter').value.toLowerCase();
 
             filteredNotifications = allNotifications.filter(notification => {
+                // Defensive checks
+                const severity = notification.Severity || 'Info';
+                const title = notification.Title || '';
+                const message = notification.Message || '';
+                const timestamp = notification.Timestamp;
+
                 // Severity filter
-                if (severityFilter && notification.Severity !== severityFilter) {
+                if (severityFilter && severity !== severityFilter) {
                     return false;
                 }
 
                 // Time filter
-                if (timeFilter) {
-                    const notificationTime = new Date(notification.Timestamp);
-                    const now = new Date();
-                    const diffMs = now - notificationTime;
+                if (timeFilter && timestamp) {
+                    try {
+                        const notificationTime = new Date(timestamp);
+                        const now = new Date();
+                        const diffMs = now - notificationTime;
 
-                    switch (timeFilter) {
-                        case '1h':
-                            if (diffMs > 3600000) return false;
-                            break;
-                        case '24h':
-                            if (diffMs > 86400000) return false;
-                            break;
-                        case '7d':
-                            if (diffMs > 604800000) return false;
-                            break;
+                        switch (timeFilter) {
+                            case '1h':
+                                if (diffMs > 3600000) return false;
+                                break;
+                            case '24h':
+                                if (diffMs > 86400000) return false;
+                                break;
+                            case '7d':
+                                if (diffMs > 604800000) return false;
+                                break;
+                        }
+                    } catch (err) {
+                        // If timestamp is invalid, include the notification
                     }
                 }
 
                 // Search filter
                 if (searchFilter) {
-                    const searchableText = (notification.Title + ' ' + notification.Message).toLowerCase();
+                    const searchableText = (title + ' ' + message).toLowerCase();
                     if (!searchableText.includes(searchFilter)) {
                         return false;
                     }
@@ -249,39 +259,50 @@
 
             emptyState.style.display = 'none';
 
-            const html = filteredNotifications.map(notification => `
-                <div class="card mb-3 notification-card severity-${notification.Severity.toLowerCase()}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <div class="d-flex align-items-center mb-2">
-                                    <h5 class="card-title mb-0 me-2">${notification.Title}</h5>
-                                    <span class="badge bg-${getSeverityColor(notification.Severity)}">${notification.Severity}</span>
-                                </div>
-                                <p class="card-text">${notification.Message}</p>
-                                <div class="text-muted small">
-                                    <i class="fas fa-clock"></i> ${formatTimestamp(notification.Timestamp)}
-                                    ${notification.Source ? `<span class="ms-3"><i class="fas fa-tag"></i> ${notification.Source}</span>` : ''}
-                                </div>
-                                ${Object.keys(notification.Metadata || {}).length > 0 ? `
-                                    <div class="mt-2">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#metadata-${notification.Id}" aria-expanded="false">
-                                            <i class="fas fa-info-circle"></i> Show Details
-                                        </button>
-                                        <div class="collapse mt-2" id="metadata-${notification.Id}">
-                                            <div class="card card-body bg-light">
-                                                <small>
-                                                    ${Object.entries(notification.Metadata || {}).map(([key, value]) => `<strong>${key}:</strong> ${value}`).join('<br>')}
-                                                </small>
+            const html = filteredNotifications.map(notification => {
+                // Defensive checks for notification properties
+                const severity = notification.Severity || 'Info';
+                const title = notification.Title || 'Notification';
+                const message = notification.Message || 'No message';
+                const timestamp = notification.Timestamp || new Date().toISOString();
+                const source = notification.Source || '';
+                const metadata = notification.Metadata || {};
+                const id = notification.Id || 'unknown';
+                
+                return `
+                    <div class="card mb-3 notification-card severity-${severity.toLowerCase()}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="card-title mb-0 me-2">${title}</h5>
+                                        <span class="badge bg-${getSeverityColor(severity)}">${severity}</span>
+                                    </div>
+                                    <p class="card-text">${message}</p>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-clock"></i> ${formatTimestamp(timestamp)}
+                                        ${source ? `<span class="ms-3"><i class="fas fa-tag"></i> ${source}</span>` : ''}
+                                    </div>
+                                    ${Object.keys(metadata).length > 0 ? `
+                                        <div class="mt-2">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#metadata-${id}" aria-expanded="false">
+                                                <i class="fas fa-info-circle"></i> Show Details
+                                            </button>
+                                            <div class="collapse mt-2" id="metadata-${id}">
+                                                <div class="card card-body bg-light">
+                                                    <small>
+                                                        ${Object.entries(metadata).map(([key, value]) => `<strong>${key}:</strong> ${value}`).join('<br>')}
+                                                    </small>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ` : ''}
+                                    ` : ''}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             container.innerHTML = html;
         }
