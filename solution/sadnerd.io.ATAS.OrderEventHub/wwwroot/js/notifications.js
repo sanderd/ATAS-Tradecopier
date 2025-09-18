@@ -123,7 +123,18 @@ class NotificationManager {
         try {
             const response = await fetch('/api/notifications?count=20');
             const notifications = await response.json();
-            this.notifications = notifications || [];
+            
+            // Normalize all loaded notifications to Pascal case
+            this.notifications = (notifications || []).map(n => ({
+                Id: n.Id || n.id,
+                Title: n.Title || n.title,
+                Message: n.Message || n.message,
+                Severity: this.normalizeSeverity(n.Severity || n.severity),
+                Timestamp: n.Timestamp || n.timestamp,
+                Source: n.Source || n.source,
+                Metadata: n.Metadata || n.metadata || {}
+            }));
+            
             this.updateUI();
         } catch (err) {
             console.error("Failed to load existing notifications:", err);
@@ -131,22 +142,32 @@ class NotificationManager {
     }
 
     handleNotification(notification) {
-        // Ensure notification has required properties
-        if (!notification || !notification.Title || !notification.Message) {
+        // Ensure notification has required properties (handle both Pascal and camel case)
+        const title = notification.Title || notification.title;
+        const message = notification.Message || notification.message;
+        const severity = notification.Severity || notification.severity;
+        const timestamp = notification.Timestamp || notification.timestamp;
+        const source = notification.Source || notification.source;
+        const metadata = notification.Metadata || notification.metadata;
+        const id = notification.Id || notification.id;
+
+        if (!title || !message) {
             console.warn("Received invalid notification:", notification);
             return;
         }
 
-        // Ensure Severity is a string
-        if (typeof notification.Severity === 'number') {
-            // Convert enum number to string
-            const severityMap = { 0: 'Info', 1: 'Warning', 2: 'Error', 3: 'Critical' };
-            notification.Severity = severityMap[notification.Severity] || 'Info';
-        } else if (!notification.Severity) {
-            notification.Severity = 'Info';
-        }
+        // Normalize notification object to Pascal case for consistency
+        const normalizedNotification = {
+            Id: id,
+            Title: title,
+            Message: message,
+            Severity: this.normalizeSeverity(severity),
+            Timestamp: timestamp,
+            Source: source,
+            Metadata: metadata || {}
+        };
 
-        this.notifications.unshift(notification);
+        this.notifications.unshift(normalizedNotification);
         
         // Keep only recent notifications in memory
         if (this.notifications.length > 100) {
@@ -154,11 +175,23 @@ class NotificationManager {
         }
 
         this.updateUI();
-        this.playSound(notification.Severity);
-        this.showBrowserNotification(notification);
+        this.playSound(normalizedNotification.Severity);
+        this.showBrowserNotification(normalizedNotification);
 
         // Dispatch custom event for standalone notification page
-        window.dispatchEvent(new CustomEvent('notificationReceived', { detail: notification }));
+        window.dispatchEvent(new CustomEvent('notificationReceived', { detail: normalizedNotification }));
+    }
+
+    normalizeSeverity(severity) {
+        // Ensure Severity is a string
+        if (typeof severity === 'number') {
+            // Convert enum number to string
+            const severityMap = { 0: 'Info', 1: 'Warning', 2: 'Error', 3: 'Critical' };
+            return severityMap[severity] || 'Info';
+        } else if (!severity) {
+            return 'Info';
+        }
+        return severity;
     }
 
     updateUI() {

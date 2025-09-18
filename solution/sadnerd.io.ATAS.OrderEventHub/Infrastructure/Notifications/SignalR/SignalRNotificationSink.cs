@@ -19,16 +19,19 @@ public class SignalRNotificationSink : INotificationSink
     {
         try
         {
-            await _hubContext.Clients.Group("Notifications").SendAsync("NotificationReceived", new
+            // Explicitly create object with Pascal case property names to match JavaScript expectations
+            var notificationData = new
             {
-                notification.Id,
-                notification.Title,
-                notification.Message,
+                Id = notification.Id,
+                Title = notification.Title,
+                Message = notification.Message,
                 Severity = notification.Severity.ToString(),
-                notification.Timestamp,
-                notification.Source,
-                notification.Metadata
-            });
+                Timestamp = notification.Timestamp,
+                Source = notification.Source,
+                Metadata = notification.Metadata
+            };
+
+            await _hubContext.Clients.Group("Notifications").SendAsync("NotificationReceived", notificationData);
         }
         catch (Exception ex)
         {
