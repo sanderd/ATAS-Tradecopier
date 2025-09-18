@@ -79,13 +79,17 @@ public class CopyStrategyService
         CancellationToken cancellationToken = default
     )
     {
-        var strategy = await _context.CopyStrategies.FindAsync(new object[] { strategyId }, cancellationToken);
+        var strategy = await _context.CopyStrategies
+            .Include(s => s.ProjectXAccount)
+            .ThenInclude(a => a.ApiCredential)
+            .FirstOrDefaultAsync(s => s.Id == strategyId, cancellationToken);
+            
         if (strategy == null)
         {
             throw new KeyNotFoundException($"CopyStrategy with ID {strategyId} not found.");
         }
 
-        // Capture the original data before update
+        // Capture the original data before update for manager removal
         var originalData = new CopyStrategyDeletedEvent(
             strategy.Id,
             strategy.AtasAccountId,
@@ -104,8 +108,13 @@ public class CopyStrategyService
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Remove the old manager and add the new one
+        // Remove the old manager first, then add the new one
+        // This ensures clean state transition
         await _mediator.Publish(originalData, CancellationToken.None);
+        
+        // Give a small delay to ensure the deletion handler completes
+        await Task.Delay(100, cancellationToken);
+        
         await _mediator.Publish(new CopyStrategyAddedEvent(strategy.Id), CancellationToken.None);
     }
 }

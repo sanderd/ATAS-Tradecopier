@@ -19,40 +19,45 @@
     <input type="hidden" asp-for="Id" />
     
     <div class="mb-3">
-        <label asp-for="AtasAccountId" class="form-label">Atas Account</label>
-        <select asp-for="AtasAccountId" class="form-select" required>
+        <label asp-for="AtasAccountId" class="form-label"></label>
+        <select asp-for="AtasAccountId" class="form-select">
             <option value="">Select Atas Account</option>
             @foreach (var account in Model.AtasAccounts)
             {
                 <option value="@account.AtasAccountId">@account.AtasAccountId</option>
             }
         </select>
+        <span asp-validation-for="AtasAccountId" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="ProjectXAccountId" class="form-label">ProjectX Account</label>
-        <select asp-for="ProjectXAccountId" class="form-select" required>
+        <label asp-for="ProjectXAccountId" class="form-label"></label>
+        <select asp-for="ProjectXAccountId" class="form-select">
             <option value="">Select ProjectX Account</option>
             @foreach (var account in Model.ProjectXAccounts)
             {
                 <option value="@account.ProjectXAccountId">@account.ProjectXAccountId</option>
             }
         </select>
+        <span asp-validation-for="ProjectXAccountId" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="AtasContract" class="form-label">Atas Contract</label>
-        <input asp-for="AtasContract" type="text" class="form-control" required />
+        <label asp-for="AtasContract" class="form-label"></label>
+        <input asp-for="AtasContract" type="text" class="form-control" />
+        <span asp-validation-for="AtasContract" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="ProjectXContract" class="form-label">ProjectX Contract</label>
-        <input asp-for="ProjectXContract" type="text" class="form-control" required />
+        <label asp-for="ProjectXContract" class="form-label"></label>
+        <input asp-for="ProjectXContract" type="text" class="form-control" />
+        <span asp-validation-for="ProjectXContract" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="ContractMultiplier" class="form-label">Contract Multiplier</label>
-        <input asp-for="ContractMultiplier" type="number" class="form-control" min="1" required />
+        <label asp-for="ContractMultiplier" class="form-label"></label>
+        <input asp-for="ContractMultiplier" type="number" class="form-control" min="1" />
+        <span asp-validation-for="ContractMultiplier" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
@@ -60,3 +65,7 @@
         <a asp-page="/CopyStrategy/Index" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
