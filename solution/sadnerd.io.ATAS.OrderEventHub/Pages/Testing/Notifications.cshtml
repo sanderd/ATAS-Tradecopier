@@ -1,0 +1,156 @@
+@page "/Testing/Notifications"
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.Testing.NotificationsModel
+@{
+    ViewData["Title"] = "Notification Testing";
+}
+
+@if (!Model.IsTestingEnabled)
+{
+    <div class="alert alert-warning">
+        <h4><i class="fas fa-exclamation-triangle"></i> Testing Features Disabled</h4>
+        <p>Testing features are currently disabled. Enable the 'NotificationTesting' feature flag to access this page.</p>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-flask"></i> Notification Testing</h1>
+            <p class="lead">Test the notification system with various severity levels and scenarios.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-play"></i> Single Notifications</h5>
+                </div>
+                <div class="card-body">
+                    <p>Send individual test notifications with different severity levels.</p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" onclick="sendTestNotification('Info')">
+                            <i class="fas fa-info-circle"></i> Send Info Notification
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="sendTestNotification('Warning')">
+                            <i class="fas fa-exclamation-triangle"></i> Send Warning Notification
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="sendTestNotification('Error')">
+                            <i class="fas fa-times-circle"></i> Send Error Notification
+                        </button>
+                        <button type="button" class="btn btn-dark" onclick="sendTestNotification('Critical')">
+                            <i class="fas fa-skull-crossbones"></i> Send Critical Notification
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-layer-group"></i> Bulk Testing</h5>
+                </div>
+                <div class="card-body">
+                    <p>Send multiple notifications for stress testing the UI.</p>
+                    <div class="mb-3">
+                        <label for="bulkCount" class="form-label">Number of notifications:</label>
+                        <input type="number" class="form-control" id="bulkCount" value="5" min="1" max="20">
+                    </div>
+                    <button type="button" class="btn btn-secondary w-100" onclick="sendBulkNotifications()">
+                        <i class="fas fa-paper-plane"></i> Send Bulk Notifications
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> Test Results</h5>
+                </div>
+                <div class="card-body">
+                    <div id="test-results" class="alert alert-info">
+                        Ready to send test notifications. Results will appear here.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>Bell Icon:</strong> Check the bell icon in the navigation bar for notification count and dropdown</li>
+                        <li><strong>Sound:</strong> Each severity level has a different sound tone (requires user interaction first)</li>
+                        <li><strong>Browser Notifications:</strong> Allow browser notifications when prompted to test desktop notifications</li>
+                        <li><strong>Real-time:</strong> Notifications appear instantly via SignalR connection</li>
+                        <li><strong>Persistence:</strong> Notifications are kept in memory and survive page refreshes until app restart</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function showResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('test-results');
+            resultDiv.className = `alert ${isSuccess ? 'alert-success' : 'alert-danger'}`;
+            resultDiv.innerHTML = `<i class="fas ${isSuccess ? 'fa-check' : 'fa-times'}"></i> ${message}`;
+        }
+
+        async function sendTestNotification(severity) {
+            try {
+                const response = await fetch('/api/testing/notifications/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ severity: severity })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showResult(`${severity} notification sent successfully! (ID: ${result.notificationId.substring(0, 8)}...)`);
+                } else {
+                    showResult(`Failed to send ${severity} notification: ${response.statusText}`, false);
+                }
+            } catch (error) {
+                showResult(`Error sending ${severity} notification: ${error.message}`, false);
+            }
+        }
+
+        async function sendBulkNotifications() {
+            const count = parseInt(document.getElementById('bulkCount').value);
+            
+            if (count < 1 || count > 20) {
+                showResult('Please enter a number between 1 and 20', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/testing/notifications/send-multiple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: count })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showResult(`Successfully sent ${count} bulk notifications!`);
+                } else {
+                    showResult(`Failed to send bulk notifications: ${response.statusText}`, false);
+                }
+            } catch (error) {
+                showResult(`Error sending bulk notifications: ${error.message}`, false);
+            }
+        }
+    </script>
+}
