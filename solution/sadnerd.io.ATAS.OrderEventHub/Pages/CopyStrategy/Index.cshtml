@@ -32,7 +32,7 @@
             <th>ID</th>
             <th>Atas Account</th>
             <th>ProjectX Account</th>
-            <th>Vendor / Username</th>
+            <th>Vendor</th>
             <th>Contracts</th>
             <th>Multiplier</th>
             <th>Status</th>
@@ -55,21 +55,7 @@
                     <strong>@strategy.AtasAccountId</strong>
                 </td>
                 <td>
-                    <div>
-                        <strong>@strategy.ProjectXAccountId</strong>
-                        @if (strategy.ProjectXAccount?.ApiCredential == null)
-                        {
-                            <br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> No API credentials</small>
-                        }
-                        else if (strategy.ProjectXAccount.ApiCredential.IsActive == false)
-                        {
-                            <br><small class="text-danger"><i class="fas fa-times-circle"></i> Inactive credentials</small>
-                        }
-                        else
-                        {
-                            <br><small class="text-success"><i class="fas fa-check-circle"></i> @strategy.ProjectXAccount.ApiCredential.DisplayName</small>
-                        }
-                    </div>
+                    <strong>@strategy.ProjectXAccountId</strong>
                 </td>
                 <td>
                     @if (strategy.ProjectXAccount != null)
@@ -136,7 +122,7 @@
                     }
                 </td>
                 <td>
-                    <div class="btn-group btn-group-sm" role="group">
+                    <div class="btn-group" role="group" style="gap: 2px;">
                         @* State Management Buttons *@
                         @if (hasError)
                         {
@@ -145,14 +131,13 @@
                                 <form method="post" asp-page-handler="SetState" class="d-inline">
                                     <input type="hidden" name="strategyId" value="@strategy.Id" />
                                     <input type="hidden" name="state" value="@ManagerState.Enabled" />
-                                    <button type="submit" class="btn btn-success" title="Restart">
+                                    <button type="submit" class="btn btn-success btn-sm" title="Restart">
                                         <i class="fas fa-redo"></i>
-                                    </button>
-                                </form>
+                                    </form>
                             }
                             else
                             {
-                                <a asp-page="/TopstepAccount/Edit" asp-route-id="@strategy.ProjectXAccountId" class="btn btn-warning" title="Fix Credentials">
+                                <a asp-page="/TopstepAccount/Edit" asp-route-id="@strategy.ProjectXAccountId" class="btn btn-warning btn-sm" title="Fix Credentials">
                                     <i class="fas fa-wrench"></i>
                                 </a>
                             }
@@ -162,7 +147,7 @@
                             <form method="post" asp-page-handler="SetState" class="d-inline">
                                 <input type="hidden" name="strategyId" value="@strategy.Id" />
                                 <input type="hidden" name="state" value="@ManagerState.Enabled" />
-                                <button type="submit" class="btn btn-success" title="Start">
+                                <button type="submit" class="btn btn-success btn-sm" title="Start">
                                     <i class="fas fa-play"></i>
                                 </button>
                             </form>
@@ -172,7 +157,7 @@
                             <form method="post" asp-page-handler="SetState" class="d-inline">
                                 <input type="hidden" name="strategyId" value="@strategy.Id" />
                                 <input type="hidden" name="state" value="@ManagerState.Disabled" />
-                                <button type="submit" class="btn btn-secondary" title="Stop">
+                                <button type="submit" class="btn btn-secondary btn-sm" title="Stop">
                                     <i class="fas fa-stop"></i>
                                 </button>
                             </form>
@@ -181,10 +166,10 @@
                         @* Edit/Delete Buttons - Only show when strategy is not active *@
                         @if (!isActive)
                         {
-                            <a asp-page="/CopyStrategy/Edit" asp-route-id="@strategy.Id" class="btn btn-primary" title="Edit">
+                            <a asp-page="/CopyStrategy/Edit" asp-route-id="@strategy.Id" class="btn btn-primary btn-sm" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <button class="btn btn-danger" onclick="confirmAndDelete(@strategy.Id)" title="Delete">
+                            <button class="btn btn-danger btn-sm" onclick="confirmAndDelete(@strategy.Id)" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
                         }

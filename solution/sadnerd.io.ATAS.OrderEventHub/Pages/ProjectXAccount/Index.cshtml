@@ -4,7 +4,7 @@
 <h1>ProjectX Accounts</h1>
 
 <p>
-    <a asp-page="/ProjectXAccountCreate" class="btn btn-primary mb-3">Add New Account</a>
+    <a asp-page="/ProjectXAccount/Create" class="btn btn-primary mb-3">Add New Account</a>
     <a asp-page="/ApiCredentials/Index" class="btn btn-outline-secondary mb-3">Manage API Credentials</a>
 </p>
 
@@ -60,8 +60,8 @@
                     }
                 </td>
                 <td>
-                    <a asp-page="/ProjectXAccountEdit" asp-route-id="@account.ProjectXAccountId" class="btn btn-sm btn-outline-primary">Edit</a>
-                    <a asp-page="/ProjectXAccountDelete" asp-route-id="@account.ProjectXAccountId" class="btn btn-sm btn-outline-danger">Delete</a>
+                    <a asp-page="/TopstepAccount/Edit" asp-route-id="@account.ProjectXAccountId" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-page="/TopstepAccount/Delete" asp-route-id="@account.ProjectXAccountId" class="btn btn-sm btn-outline-danger">Delete</a>
                 </td>
             </tr>
         }
