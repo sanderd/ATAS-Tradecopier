@@ -20,3 +20,46 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Notification System Styles */
+.notification-dropdown {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.notification-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.severity-info {
+    border-left-color: #0d6efd;
+}
+
+.severity-warning {
+    border-left-color: #ffc107;
+}
+
+.severity-error {
+    border-left-color: #dc3545;
+}
+
+.severity-critical {
+    border-left-color: #6c757d;
+    background-color: #f8f9fa;
+}
