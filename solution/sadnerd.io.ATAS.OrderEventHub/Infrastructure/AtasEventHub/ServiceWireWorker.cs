@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Microsoft.Extensions.Hosting;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using ServiceWire.TcpIp;
 

@@ -7,12 +7,12 @@ namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.AtasAccounts;
 
 public class CreateModel : PageModel
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
 
     [BindProperty]
     public AtasAccount AtasAccount { get; set; }
 
-    public CreateModel(TradeCopyContext context)
+    public CreateModel(OrderEventHubDbContext context)
     {
         _context = context;
     }

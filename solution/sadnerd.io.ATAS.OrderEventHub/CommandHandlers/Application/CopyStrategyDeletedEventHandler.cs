@@ -1,5 +1,5 @@
 using MediatR;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.Application;
 
@@ -15,12 +15,12 @@ public class CopyStrategyDeletedEventHandler : INotificationHandler<CopyStrategy
     public Task Handle(CopyStrategyDeletedEvent notification, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "CopyStrategy deleted: Id={StrategyId}, AtasAccountId={AtasAccountId}, TopstepAccountId={TopstepAccountId}, AtasContract={AtasContract}, TopstepContract={TopstepContract}, ContractMultiplier={ContractMultiplier}",
+            "CopyStrategy deleted: Id={StrategyId}, AtasAccountId={AtasAccountId}, ProjectXAccountId={ProjectXAccountId}, AtasContract={AtasContract}, ProjectXContract={ProjectXContract}, ContractMultiplier={ContractMultiplier}",
             notification.StrategyId,
             notification.AtasAccountId,
-            notification.TopstepAccountId,
+            notification.ProjectXAccountId,
             notification.AtasContract,
-            notification.TopstepContract,
+            notification.ProjectXContract,
             notification.ContractMultiplier
         );
 

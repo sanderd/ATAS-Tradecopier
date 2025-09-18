@@ -1,0 +1,65 @@
+@page "{id}"
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.ProjectXAccounts.EditModel
+@{
+    ViewData["Title"] = "Edit ProjectX Account";
+}
+
+<h1>Edit ProjectX Account</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ProjectXAccount.ProjectXAccountId" class="form-label">Account ID</label>
+                <input asp-for="ProjectXAccount.ProjectXAccountId" class="form-control" readonly />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ProjectXAccount.Vendor" class="form-label">Vendor</label>
+                <select asp-for="ProjectXAccount.Vendor" class="form-control" asp-items="Model.AvailableVendors" id="Vendor">
+                    <option value="">-- Select Vendor --</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ProjectXAccount.ApiCredentialId" class="form-label">API Credential</label>
+                <select asp-for="ProjectXAccount.ApiCredentialId" class="form-control" asp-items="Model.AvailableApiCredentials" id="ApiCredentialId">
+                    <option value="">-- Select API Credential --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-page="/ProjectXAccountIndex" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('Vendor').addEventListener('change', function () {
+            const vendorId = this.value;
+            const credentialSelect = document.getElementById('ApiCredentialId');
+
+            credentialSelect.innerHTML = '<option value="">-- Select API Credential --</option>';
+
+            if (vendorId) {
+                fetch(`?handler=ApiCredentials&vendorId=${vendorId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(credential => {
+                            const option = document.createElement('option');
+                            option.value = credential.id;
+                            option.textContent = credential.displayName;
+                            credentialSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error loading credentials:', error));
+            }
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -14,9 +14,9 @@
         </select>
     </div>
     <div class="form-group">
-        <label for="TopstepAccountId">Topstep Account</label>
-        <select class="form-control" id="TopstepAccountId" name="TopstepAccountId" asp-for="TopstepAccountId" asp-items="@(new SelectList(Model.TopstepAccounts, "TopstepAccountId", "TopstepAccountId"))">
-            <option value="">-- Select Topstep Account --</option>
+        <label for="ProjectXAccountId">ProjectX Account</label>
+        <select class="form-control" id="ProjectXAccountId" name="ProjectXAccountId" asp-for="ProjectXAccountId" asp-items="@(new SelectList(Model.ProjectXAccounts, "ProjectXAccountId", "ProjectXAccountId"))">
+            <option value="">-- Select ProjectX Account --</option>
         </select>
     </div>
     <div class="form-group">
@@ -24,8 +24,8 @@
         <input type="text" class="form-control" id="AtasContract" name="AtasContract" asp-for="AtasContract" required />
     </div>
     <div class="form-group">
-        <label for="TopstepContract">Topstep Contract</label>
-        <input type="text" class="form-control" id="TopstepContract" name="TopstepContract" asp-for="TopstepContract" required />
+        <label for="ProjectXContract">ProjectX Contract</label>
+        <input type="text" class="form-control" id="ProjectXContract" name="ProjectXContract" asp-for="ProjectXContract" required />
     </div>
     <div class="form-group">
         <label for="ContractMultiplier">Contract Multiplier</label>

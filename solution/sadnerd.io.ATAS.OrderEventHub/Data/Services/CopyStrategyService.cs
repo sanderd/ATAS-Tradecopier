@@ -1,16 +1,16 @@
 ﻿using MediatR;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Data.Services;
 
 public class CopyStrategyService
 {
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
     private readonly IMediator _mediator;
 
     public CopyStrategyService(
-        TradeCopyContext context, 
+        OrderEventHubDbContext context, 
         IMediator mediator
     )
     {
@@ -20,19 +20,19 @@ public class CopyStrategyService
 
     public async Task AddStrategy(
         string atasAccountId, 
-        string topstepAccountId, 
+        string projectXAccountId, 
         string atasContract,
-        string topstepContract, 
+        string projectXContract, 
         int contractMultiplier,
         CancellationToken cancellationToken = default
     )
     {
         var strategy = new CopyStrategy()
         {
-            TopstepAccountId = topstepAccountId, 
+            ProjectXAccountId = projectXAccountId, 
             AtasAccountId = atasAccountId, 
             AtasContract = atasContract,
-            TopstepContract = topstepContract, 
+            ProjectXContract = projectXContract, 
             ContractMultiplier = contractMultiplier
         };
 
@@ -55,9 +55,9 @@ public class CopyStrategyService
         var deletedEvent = new CopyStrategyDeletedEvent(
             strategy.Id,
             strategy.AtasAccountId,
-            strategy.TopstepAccountId,
+            strategy.ProjectXAccountId,
             strategy.AtasContract,
-            strategy.TopstepContract,
+            strategy.ProjectXContract,
             strategy.ContractMultiplier
         );
 

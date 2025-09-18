@@ -3,17 +3,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies;
 
 public class CreateModel : PageModel
 {
     private readonly CopyStrategyService _copyStrategyService;
-    private readonly TradeCopyContext _context;
+    private readonly OrderEventHubDbContext _context;
 
-    public CreateModel(CopyStrategyService copyStrategyService, TradeCopyContext context)
+    public CreateModel(CopyStrategyService copyStrategyService, OrderEventHubDbContext context)
     {
         _copyStrategyService = copyStrategyService;
         _context = context;
@@ -23,25 +21,25 @@ public class CreateModel : PageModel
     public string AtasAccountId { get; set; }
 
     [BindProperty]
-    public string TopstepAccountId { get; set; }
+    public string ProjectXAccountId { get; set; }
 
     [BindProperty]
     public string AtasContract { get; set; }
 
     [BindProperty]
-    public string TopstepContract { get; set; }
+    public string ProjectXContract { get; set; }
 
     [BindProperty]
     public int ContractMultiplier { get; set; }
 
     public List<AtasAccount> AtasAccounts { get; set; } = new();
-    public List<TopstepAccount> TopstepAccounts { get; set; } = new();
+    public List<ProjectXAccount> ProjectXAccounts { get; set; } = new();
 
     public void OnGet()
     {
         // Fetch accounts from the database
         AtasAccounts = _context.AtasAccounts.ToList();
-        TopstepAccounts = _context.TopstepAccount.ToList();
+        ProjectXAccounts = _context.ProjectXAccounts.ToList();
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -53,9 +51,9 @@ public class CreateModel : PageModel
 
         await _copyStrategyService.AddStrategy(
             AtasAccountId,
-            TopstepAccountId,
+            ProjectXAccountId,
             AtasContract,
-            TopstepContract,
+            ProjectXContract,
             ContractMultiplier
         );
 

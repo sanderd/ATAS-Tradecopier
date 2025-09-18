@@ -1,4 +1,4 @@
-﻿using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+﻿using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Atas;
 
 public interface IEventBus
 {

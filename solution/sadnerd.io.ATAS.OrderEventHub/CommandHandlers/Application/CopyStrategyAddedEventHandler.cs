@@ -1,20 +1,20 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Admin;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.Application;
 
 public class CopyStrategyAddedEventHandler : INotificationHandler<CopyStrategyAddedEvent>
 {
-    private readonly TopstepXTradeCopyManagerProvider _provider;
-    private readonly TradeCopyContext _dbContext;
+    private readonly ProjectXTradeCopyManagerProvider _provider;
+    private readonly OrderEventHubDbContext _dbContext;
     private readonly ILogger<CopyStrategyAddedEventHandler> _logger;
 
     public CopyStrategyAddedEventHandler(
-        TopstepXTradeCopyManagerProvider provider,
-        TradeCopyContext dbContext,
+        ProjectXTradeCopyManagerProvider provider,
+        OrderEventHubDbContext dbContext,
         ILogger<CopyStrategyAddedEventHandler> logger
     )
     {
@@ -29,24 +29,24 @@ public class CopyStrategyAddedEventHandler : INotificationHandler<CopyStrategyAd
 
         try
         {
-            var strategy = await _dbContext.CopyStrategies.SingleAsync(
-                x => x.Id == notification.CopyStrategyId,
-                cancellationToken
-            );
+            var strategy = await _dbContext.CopyStrategies
+                .Include(x => x.ProjectXAccount)
+                .SingleAsync(x => x.Id == notification.CopyStrategyId, cancellationToken);
 
             _provider.AddManager(
                 strategy.AtasAccountId,
                 strategy.AtasContract,
-                strategy.TopstepAccountId,
-                strategy.TopstepContract,
-                strategy.ContractMultiplier
+                strategy.ProjectXAccountId,
+                strategy.ProjectXContract,
+                strategy.ContractMultiplier,
+                strategy.ProjectXAccount.Vendor
             );
 
             _logger.LogInformation(
-                "Successfully added manager for CopyStrategyId: {CopyStrategyId}, AtasAccountId: {AtasAccountId}, TopstepAccountId: {TopstepAccountId}",
+                "Successfully added manager for CopyStrategyId: {CopyStrategyId}, AtasAccountId: {AtasAccountId}, ProjectXAccountId: {ProjectXAccountId}",
                 strategy.Id,
                 strategy.AtasAccountId,
-                strategy.TopstepAccountId
+                strategy.ProjectXAccountId
             );
         }
         catch (InvalidOperationException ex)

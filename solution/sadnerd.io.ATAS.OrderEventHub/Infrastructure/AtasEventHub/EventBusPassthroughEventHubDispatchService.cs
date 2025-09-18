@@ -1,6 +1,6 @@
 ﻿using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Messages;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.Atas;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 

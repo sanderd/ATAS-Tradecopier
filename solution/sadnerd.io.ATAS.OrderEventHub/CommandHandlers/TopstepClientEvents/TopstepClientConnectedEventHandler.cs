@@ -1,18 +1,18 @@
 ﻿using MediatR;
-using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.IntegrationEvents.BrowserAutomation;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.ConnectionManagement;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 
 namespace sadnerd.io.ATAS.OrderEventHub.CommandHandlers.TopstepClientEvents;
 
 public class TopstepClientConnectedEventHandler : INotificationHandler<TopstepClientConnectedEvent>
 {
-    private readonly TopstepXTradeCopyManagerProvider _provider;
-    private readonly TopstepConnectionManager _manager;
+    private readonly ProjectXTradeCopyManagerProvider _provider;
+    private readonly TopstepBrowserConnectionManager _manager;
 
     public TopstepClientConnectedEventHandler(
-        TopstepXTradeCopyManagerProvider provider,
-        TopstepConnectionManager manager
+        ProjectXTradeCopyManagerProvider provider,
+        TopstepBrowserConnectionManager manager
     )
     {
         _provider = provider;
@@ -24,10 +24,10 @@ public class TopstepClientConnectedEventHandler : INotificationHandler<TopstepCl
         var connection = new TopstepConnection(ConnectionStatus.Connected, notification.ConnectionId, notification.AccountName, notification.Instrument);
         _manager.Add(connection);
         
-        var managers = _provider.GetManagersByTopstepInformation(notification.AccountName, notification.Instrument);
+        var managers = _provider.GetManagersByProjectXInformation(notification.AccountName, notification.Instrument);
         foreach (var manager in managers)
         {
-            manager.SetConnection(connection);
+            manager.SetState(ManagerState.Enabled);
         }
     }
 }

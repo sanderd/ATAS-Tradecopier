@@ -2,12 +2,13 @@
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
+using sadnerd.io.ATAS.OrderEventHub.Factories;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.ConnectionManagement;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
+using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.SignalR;
 using sadnerd.io.ATAS.OrderEventHub.Services;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.ConnectionManagement;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.CopyManager;
-using sadnerd.io.ATAS.OrderEventHub.TopstepIntegration.SignalR;
 using sadnerd.io.ATAS.ProjectXApiClient;
 using Serilog;
 
@@ -36,15 +37,22 @@ public class Startup
         services.AddHostedService<IntegrationEventProcessorJob>();
         services.AddSingleton<InMemoryMessageQueue>();
         services.AddSingleton<IEventBus, EventBus>();
-        services.AddTransient<ITopstepBrowserAutomationClient, TopstepBrowserAutomationClient>();
+        services.AddTransient<IProjectXBrowserAutomationClient, ProjectXBrowserAutomationClient>();
 
-        services.AddSingleton<TopstepXTradeCopyManagerProvider>(sp =>
+        // Add ProjectX vendor configuration service
+        services.AddSingleton<IProjectXVendorConfigurationService, ProjectXVendorConfigurationService>();
+        services.AddSingleton<IProjectXClientFactory, ProjectXClientFactory>();
+
+        services.AddSingleton<ProjectXTradeCopyManagerProvider>(sp =>
         {
-            var manager = new TopstepXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
+            var manager = new ProjectXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);
             return manager;
         });
-        services.AddSingleton<TopstepConnectionManager>();
 
+        // NOTE: No longer in use
+        services.AddSingleton<TopstepBrowserConnectionManager>();
+
+        // Legacy configuration for backward compatibility - now handled by vendor service
         services.Configure<ProjectXClientOptions>(options =>
         {
             options.ApiKey = "6p9C6d/G5QMR7UZ/Bfsf2TjzKLLvJQtPqmTt/sVRqZM=";
@@ -56,11 +64,9 @@ public class Startup
 
         services.AddControllersWithViews();
         services.AddRazorPages();
-        services.AddDbContext<TradeCopyContext>();
+        services.AddDbContext<OrderEventHubDbContext>();
 
         services.AddScoped<CopyStrategyService>();
-
-        services.AddHostedService<TopstepTest>();
 
         services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
             //.ReadFrom.Configuration(builder.Configuration)
@@ -85,9 +91,9 @@ public class Startup
 
         app.UseRouting();
 
+        // Allow CORS from TopstepX for SignalR connections (used in case of Browser Automation)
         app.UseCors(builder =>
         {
-            builder.WithOrigins("https://www.youtube.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
             builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com").AllowAnyMethod().AllowAnyHeader()
                 .AllowCredentials();
         });
@@ -96,7 +102,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<SignalRTopstepAutomationHub>("/topstepxhub");
+            endpoints.MapHub<SignalRProjectXAutomationHub>("/topstepxhub");
 
             endpoints.MapControllerRoute(
                 name: "default",
@@ -105,12 +111,10 @@ public class Startup
             endpoints.MapRazorPages();
         });
 
-        
-
         // Apply migrations and ensure database is created
         using (var scope = app.ApplicationServices.CreateScope())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<TradeCopyContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
             dbContext.Database.Migrate();
         }
     }
