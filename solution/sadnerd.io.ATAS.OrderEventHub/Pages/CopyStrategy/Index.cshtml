@@ -2,126 +2,201 @@
 @using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager
 @model sadnerd.io.ATAS.OrderEventHub.Models.Pages.CopyStrategies.IndexModel
 
-<h1>Copy Strategies</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-copy me-2"></i>Copy Strategies</h1>
+    <a asp-page="/CopyStrategy/Create" class="btn btn-success">
+        <i class="fas fa-plus"></i>
+    </a>
+</div>
 
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger">
-        @TempData["ErrorMessage"]
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<a asp-page="/CopyStrategy/Create" class="btn btn-primary mb-3">Add New Strategy</a>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
-<table class="table">
-    <thead>
-    <tr>
-        <th>Id</th>
-        <th>Atas Account</th>
-        <th>ProjectX Account</th>
-        <th>Atas Contract</th>
-        <th>ProjectX Contract</th>
-        <th>Contract Multiplier</th>
-        <th>Status</th>
-        <th>Connection Status</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var strategy in Model.CopyStrategies)
-    {
-        var status = Model.StrategyStatuses.FirstOrDefault(s => s.StrategyId == strategy.Id);
-
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead class="table-dark">
         <tr>
-            <td>@strategy.Id</td>
-            <td>@strategy.AtasAccountId</td>
-            <td>
-                @strategy.ProjectXAccountId
-                @if (strategy.ProjectXAccount?.ApiCredential == null)
-                {
-                    <br><small class="text-warning">⚠️ No API credentials</small>
-                }
-                else if (strategy.ProjectXAccount.ApiCredential.IsActive == false)
-                {
-                    <br><small class="text-danger">❌ Inactive credentials</small>
-                }
-                else
-                {
-                    <br><small class="text-success">✅ @strategy.ProjectXAccount.ApiCredential.DisplayName</small>
-                }
-            </td>
-            <td>@strategy.AtasContract</td>
-            <td>@strategy.ProjectXContract</td>
-            <td>@strategy.ContractMultiplier</td>
-            <td>
-                @if (status?.State == ManagerState.Error)
-                {
-                    <span class="badge bg-danger">Error</span>
-                    @if (!string.IsNullOrEmpty(status.ErrorMessage))
+            <th>ID</th>
+            <th>Atas Account</th>
+            <th>ProjectX Account</th>
+            <th>Vendor</th>
+            <th>Contracts</th>
+            <th>Multiplier</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var strategy in Model.CopyStrategies)
+        {
+            var status = Model.StrategyStatuses.FirstOrDefault(s => s.StrategyId == strategy.Id);
+            var isActive = status?.State == ManagerState.Enabled;
+            var hasError = status?.State == ManagerState.Error || status?.State == null;
+            var isDisabled = status?.State == ManagerState.Disabled;
+
+            <tr>
+                <td>
+                    <span class="badge bg-secondary">#@strategy.Id</span>
+                </td>
+                <td>
+                    <strong>@strategy.AtasAccountId</strong>
+                </td>
+                <td>
+                    <strong>@strategy.ProjectXAccountId</strong>
+                </td>
+                <td>
+                    @if (strategy.ProjectXAccount != null)
                     {
-                        <br><small class="text-muted">@status.ErrorMessage</small>
+                        <span class="badge bg-info">
+                            @strategy.ProjectXAccount.Vendor
+                            @if (strategy.ProjectXAccount.ApiCredential?.ApiUser != null)
+                            {
+                                <br>@strategy.ProjectXAccount.ApiCredential.ApiUser
+                            }
+                        </span>
                     }
-                }
-                else if (status?.State == ManagerState.Enabled)
-                {
-                    <span class="badge bg-success">Active</span>
-                }
-                else if (status?.State == ManagerState.Disabled)
-                {
-                    <span class="badge bg-secondary">Disabled</span>
-                }
-                else
-                {
-                    <span class="badge bg-warning">Not Initialized</span>
-                }
-            </td>
-            <td>
-                @status?.ConnectionStatus
-            </td>
-            <td>
-                @if (status?.State == ManagerState.Error || status?.State == null)
-                {
-                    @if (strategy.ProjectXAccount?.ApiCredential?.IsActive == true)
+                </td>
+                <td>
+                    <small class="text-muted">
+                        @strategy.AtasContract → @strategy.ProjectXContract
+                    </small>
+                </td>
+                <td>
+                    <span class="badge bg-info">@strategy.ContractMultiplier×</span>
+                </td>
+                <td>
+                    @if (hasError)
                     {
-                        <form method="post" asp-page-handler="SetState" class="d-inline">
-                            <input type="hidden" name="strategyId" value="@strategy.Id" />
-                            <input type="hidden" name="state" value="@ManagerState.Enabled" />
-                            <button type="submit" class="btn btn-sm btn-success">Initialize & Enable</button>
-                        </form>
+                        <span class="badge bg-danger mb-1">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Error
+                        </span>
+                        @if (!string.IsNullOrEmpty(status?.ErrorMessage))
+                        {
+                            <br><small class="text-muted">@status.ErrorMessage</small>
+                        }
+                        @if (status?.ConnectionStatus != null)
+                        {
+                            <br><small class="text-muted"><i class="fas fa-wifi me-1"></i>@status.ConnectionStatus</small>
+                        }
+                    }
+                    else if (isActive)
+                    {
+                        <span class="badge bg-success mb-1">
+                            <i class="fas fa-play me-1"></i>Active
+                        </span>
+                        @if (status?.ConnectionStatus != null)
+                        {
+                            <br><small class="text-muted">
+                                <i class="fas @(status.ConnectionStatus == "Connected" ? "fa-wifi text-success" : "fa-wifi-slash text-warning") me-1"></i>@status.ConnectionStatus
+                            </small>
+                        }
+                    }
+                    else if (isDisabled)
+                    {
+                        <span class="badge bg-secondary mb-1">
+                            <i class="fas fa-stop me-1"></i>Disabled
+                        </span>
+                        @if (status?.ConnectionStatus != null)
+                        {
+                            <br><small class="text-muted"><i class="fas fa-wifi me-1"></i>@status.ConnectionStatus</small>
+                        }
                     }
                     else
                     {
-                        <a asp-page="/ProjectXAccountEdit" asp-route-id="@strategy.ProjectXAccountId" class="btn btn-sm btn-warning">Fix Credentials</a>
+                        <span class="badge bg-warning mb-1">
+                            <i class="fas fa-question-circle me-1"></i>Not Initialized
+                        </span>
                     }
-                } 
-                else if (status?.State == ManagerState.Disabled)
-                {
-                    <form method="post" asp-page-handler="SetState" class="d-inline">
-                        <input type="hidden" name="strategyId" value="@strategy.Id" />
-                        <input type="hidden" name="state" value="@ManagerState.Enabled" />
-                        <button type="submit" class="btn btn-sm btn-success">Enable</button>
-                    </form>
-                }
-                else if (status?.State == ManagerState.Enabled)
-                {
-                    <form method="post" asp-page-handler="SetState" class="d-inline">
-                        <input type="hidden" name="strategyId" value="@strategy.Id" />
-                        <input type="hidden" name="state" value="@ManagerState.Disabled" />
-                        <button type="submit" class="btn btn-sm btn-secondary">Disable</button>
-                    </form>
-                }
-                
-                <button class="btn btn-sm btn-danger ms-1" onclick="confirmAndDelete(@strategy.Id)">Delete</button>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+                </td>
+                <td>
+                    <div class="btn-group" role="group" style="gap: 2px;">
+                        @* State Management Buttons *@
+                        @if (hasError)
+                        {
+                            @if (strategy.ProjectXAccount?.ApiCredential?.IsActive == true)
+                            {
+                                <form method="post" asp-page-handler="SetState" class="d-inline">
+                                    <input type="hidden" name="strategyId" value="@strategy.Id" />
+                                    <input type="hidden" name="state" value="@ManagerState.Enabled" />
+                                    <button type="submit" class="btn btn-success btn-sm" title="Restart">
+                                        <i class="fas fa-redo"></i>
+                                    </form>
+                            }
+                            else
+                            {
+                                <a asp-page="/TopstepAccount/Edit" asp-route-id="@strategy.ProjectXAccountId" class="btn btn-warning btn-sm" title="Fix Credentials">
+                                    <i class="fas fa-wrench"></i>
+                                </a>
+                            }
+                        } 
+                        else if (isDisabled)
+                        {
+                            <form method="post" asp-page-handler="SetState" class="d-inline">
+                                <input type="hidden" name="strategyId" value="@strategy.Id" />
+                                <input type="hidden" name="state" value="@ManagerState.Enabled" />
+                                <button type="submit" class="btn btn-success btn-sm" title="Start">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </form>
+                        }
+                        else if (isActive)
+                        {
+                            <form method="post" asp-page-handler="SetState" class="d-inline">
+                                <input type="hidden" name="strategyId" value="@strategy.Id" />
+                                <input type="hidden" name="state" value="@ManagerState.Disabled" />
+                                <button type="submit" class="btn btn-secondary btn-sm" title="Stop">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                            </form>
+                        }
+                        
+                        @* Edit/Delete Buttons - Only show when strategy is not active *@
+                        @if (!isActive)
+                        {
+                            <a asp-page="/CopyStrategy/Edit" asp-route-id="@strategy.Id" class="btn btn-primary btn-sm" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-danger btn-sm" onclick="confirmAndDelete(@strategy.Id)" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@if (!Model.CopyStrategies.Any())
+{
+    <div class="text-center py-5">
+        <i class="fas fa-copy fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No Copy Strategies Found</h4>
+        <p class="text-muted">Get started by creating your first copy strategy.</p>
+        <a asp-page="/CopyStrategy/Create" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Add New Strategy
+        </a>
+    </div>
+}
 
 @section Scripts {
     <script>
         async function confirmAndDelete(strategyId) {
-            if (confirm("Are you sure you want to delete this strategy?")) {
+            if (confirm("Are you sure you want to delete this strategy? This action cannot be undone.")) {
                 try {
                     const response = await fetch(`/api/CopyStrategy/${strategyId}`, {
                         method: 'DELETE',
@@ -131,8 +206,17 @@
                     });
 
                     if (response.ok) {
-                        alert("Strategy deleted successfully.");
-                        location.reload(); // Reload the page to update the list
+                        // Show success message and reload
+                        const successAlert = document.createElement('div');
+                        successAlert.className = 'alert alert-success alert-dismissible fade show';
+                        successAlert.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>Strategy deleted successfully.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        document.querySelector('h1').parentNode.insertAdjacentElement('afterend', successAlert);
+                        
+                        // Reload after a short delay
+                        setTimeout(() => location.reload(), 1500);
                     } else {
                         const error = await response.json();
                         alert(`Failed to delete the strategy: ${error.message}`);

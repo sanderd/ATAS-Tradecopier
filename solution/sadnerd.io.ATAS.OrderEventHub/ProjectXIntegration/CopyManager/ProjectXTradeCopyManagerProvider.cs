@@ -40,6 +40,34 @@ public class ProjectXTradeCopyManagerProvider
         AddManagerInternal(atasAccountId, instrument, projectXAccount, projectXInstrument, contractMultiplier, vendor, account.ApiCredentialId);
     }
 
+    public void RemoveManager(string atasAccountId, string instrument, string projectXAccountId, string projectXInstrument)
+    {
+        lock (_managers)
+        {
+            var managerToRemove = _managers.FirstOrDefault(m => 
+                m.atasAccountId == atasAccountId && 
+                m.instrument == instrument && 
+                m.projectXAccountId == projectXAccountId && 
+                m.projectXInstrument == projectXInstrument);
+
+            if (managerToRemove.manager != null)
+            {
+                // Set manager to disabled state before removal
+                try
+                {
+                    managerToRemove.manager.SetState(ManagerState.Disabled);
+                }
+                catch (Exception ex)
+                {
+                    var logger = _serviceProvider.GetService<ILogger<ProjectXTradeCopyManagerProvider>>();
+                    logger?.LogWarning(ex, "Failed to disable manager before removal");
+                }
+
+                _managers.Remove(managerToRemove);
+            }
+        }
+    }
+
     private void AddManagerInternal(string atasAccountId, string instrument, string projectXAccount, string projectXInstrument, int contractMultiplier, ProjectXVendor vendor, int? apiCredentialId)
     {
         if (_managers.Any(x => x.instrument == instrument && x.atasAccountId == atasAccountId && x.projectXAccountId == projectXAccount))
