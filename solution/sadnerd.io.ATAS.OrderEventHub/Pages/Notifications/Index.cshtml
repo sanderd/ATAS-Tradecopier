@@ -38,6 +38,7 @@
                         <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
                     </div>
                     <div class="col-md-3">
+                        <label for="time-filter" class="form-label">Time Range</label>
                         <select class="form-select" id="time-filter">
                             <option value="">All Time</option>
                             <option value="1h">Last Hour</option>
@@ -46,12 +47,16 @@
                         </select>
                     </div>
                     <div class="col-md-3">
+                        <label for="search-filter" class="form-label">Search</label>
                         <input type="text" class="form-control" id="search-filter" placeholder="Search in title or message...">
                     </div>
                     <div class="col-md-3">
-                        <button type="button" class="btn btn-primary" onclick="applyFilters()">
-                            <i class="fas fa-search"></i> Apply Filters
-                        </button>
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" onclick="applyFilters()">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -182,29 +187,17 @@
     <script>
         let allNotifications = [];
         let filteredNotifications = [];
+        let notificationSettings = {};
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
+            loadNotificationSettings();
             loadNotifications();
-            loadSettings();
             setupRealTimeUpdates();
             
             // Set default severity filter from localStorage
             loadSeverityFilter();
         });
-
-        // Load settings from localStorage
-        function loadSettings() {
-            const settings = window.notificationManager?.settings || {
-                soundEnabled: true,
-                browserNotificationsEnabled: true,
-                maxNotificationsDisplay: 5
-            };
-
-            document.getElementById('sound-enabled').checked = settings.soundEnabled;
-            document.getElementById('browser-notifications-enabled').checked = settings.browserNotificationsEnabled;
-            document.getElementById('max-notifications').value = settings.maxNotificationsDisplay;
-        }
 
         // Load notification settings from localStorage
         function loadNotificationSettings() {
@@ -324,11 +317,11 @@
                     setMultiSelectValues('severity-filter', severities);
                 } catch (e) {
                     // If parsing fails, use defaults
-                    setMultiSelectValues('severity-filter', ['Warning', 'Error']);
+                    setMultiSelectValues('severity-filter', notificationSettings.pageViewSeverities);
                 }
             } else {
-                // Use defaults
-                setMultiSelectValues('severity-filter', ['Warning', 'Error']);
+                // Use settings default
+                setMultiSelectValues('severity-filter', notificationSettings.pageViewSeverities);
             }
         }
 
@@ -336,6 +329,21 @@
         function saveSeverityFilter() {
             const selectedSeverities = getMultiSelectValues('severity-filter');
             localStorage.setItem('notificationPageSeverityFilter', JSON.stringify(selectedSeverities));
+        }
+
+        // Helper functions for multi-select
+        function setMultiSelectValues(selectId, values) {
+            const select = document.getElementById(selectId);
+            if (select) {
+                Array.from(select.options).forEach(option => {
+                    option.selected = values.includes(option.value);
+                });
+            }
+        }
+
+        function getMultiSelectValues(selectId) {
+            const select = document.getElementById(selectId);
+            return select ? Array.from(select.selectedOptions).map(option => option.value) : [];
         }
 
         // Apply filters
