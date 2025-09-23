@@ -15,6 +15,8 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         private TcpClient<IOrderEventHubDispatchService>? _client;
         private bool _isConnected;
         private bool _disposed;
+        private DateTime _lastConnectionAttempt = DateTime.MinValue;
+        private readonly TimeSpan _connectionRetryDelay = TimeSpan.FromSeconds(5);
 
         public ResilientOrderEventHubDispatchService(IPEndPoint endpoint)
         {
@@ -61,9 +63,16 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             {
                 if (_client == null || !_isConnected)
                 {
+                    // Implement connection retry delay to avoid rapid reconnection attempts
+                    if (DateTime.UtcNow - _lastConnectionAttempt < _connectionRetryDelay)
+                    {
+                        throw new InvalidOperationException("Connection retry delay not elapsed");
+                    }
+
                     _client?.Dispose();
                     _client = new TcpClient<IOrderEventHubDispatchService>(_endpoint);
                     _isConnected = true;
+                    _lastConnectionAttempt = DateTime.UtcNow;
                 }
                 return _client;
             }
@@ -81,13 +90,17 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             if (_disposed) return;
 
-            while (_messageQueue.TryDequeue(out var message))
+            var processedCount = 0;
+            const int maxProcessPerCycle = 10; // Limit processing to avoid blocking
+
+            while (_messageQueue.TryDequeue(out var message) && processedCount < maxProcessPerCycle)
             {
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(900));
                     var task = Task.Run(() => ExecuteQueuedMessage(message), cts.Token);
                     task.Wait(cts.Token);
+                    processedCount++;
                 }
                 catch
                 {
@@ -125,6 +138,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             lock (_connectionLock)
             {
                 _client?.Dispose();
+                _client = null;
             }
         }
 
