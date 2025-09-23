@@ -51,13 +51,6 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 
         public BroadcastOrderEventsStrategy()
         {
-            
-            // Subscribe to TradingManager events for portfolio and security changes
-            this.TradingManager.PortfolioSelected += OnPortfolioSelected;
-            this.TradingManager.SecuritySelected += OnSecuritySelected;
-            
-            // Register based on current portfolio and security if available
-            RegisterForCurrentAccountInstrument();
         }
 
         private void OnPortfolioSelected(Portfolio portfolio)
