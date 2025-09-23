@@ -82,28 +82,80 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="sound-enabled" checked>
-                    <label class="form-check-label" for="sound-enabled">
-                        <i class="fas fa-volume-up"></i> Enable Sound Notifications
-                    </label>
-                    <div class="form-text">Play different sounds for different severity levels</div>
-                </div>
-                
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="browser-notifications-enabled" checked>
-                    <label class="form-check-label" for="browser-notifications-enabled">
-                        <i class="fas fa-desktop"></i> Enable Browser Notifications
-                    </label>
-                    <div class="form-text">Show desktop notifications when the browser is in background</div>
+                <!-- Browser Notification Settings -->
+                <h6 class="mb-3">Browser Notifications</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="browser-severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="browser-severity-filter" multiple size="4">
+                            <option value="Info">Info</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
+                            <option value="Critical" selected>Critical</option>
+                        </select>
+                        <div class="form-text">Notifications that trigger browser alerts</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="browser-notifications-enabled" checked>
+                            <label class="form-check-label" for="browser-notifications-enabled">
+                                <i class="fas fa-desktop"></i> Enable Browser Notifications
+                            </label>
+                            <div class="form-text">Show desktop notifications</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="max-notifications" class="form-label">
-                        <i class="fas fa-list"></i> Max Notifications in Dropdown
-                    </label>
-                    <input type="number" class="form-control" id="max-notifications" value="5" min="1" max="20">
-                    <div class="form-text">Number of notifications to show in the bell dropdown</div>
+                <hr>
+
+                <!-- Sound Notification Settings -->
+                <h6 class="mb-3">Sound Notifications</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="sound-severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="sound-severity-filter" multiple size="4">
+                            <option value="Info">Info</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
+                            <option value="Critical" selected>Critical</option>
+                        </select>
+                        <div class="form-text">Notifications that trigger sound alerts</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="sound-enabled" checked>
+                            <label class="form-check-label" for="sound-enabled">
+                                <i class="fas fa-volume-up"></i> Enable Sound Notifications
+                            </label>
+                            <div class="form-text">Play sounds for notifications</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Bell Dropdown Settings -->
+                <h6 class="mb-3">Notification Bell</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="bell-severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="bell-severity-filter" multiple size="4">
+                            <option value="Info">Info</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
+                            <option value="Critical" selected>Critical</option>
+                        </select>
+                        <div class="form-text">Notifications shown in bell dropdown</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="max-notifications" class="form-label">
+                                <i class="fas fa-list"></i> Max Notifications in Dropdown
+                            </label>
+                            <input type="number" class="form-control" id="max-notifications" value="5" min="1" max="20">
+                            <div class="form-text">Number of notifications to show in the bell dropdown</div>
+                        </div>
+                    </div>
                 </div>
 
                 <hr>
@@ -154,16 +206,49 @@
             document.getElementById('max-notifications').value = settings.maxNotificationsDisplay;
         }
 
+        // Load notification settings from localStorage
+        function loadNotificationSettings() {
+            const defaultSettings = {
+                soundEnabled: true,
+                browserNotificationsEnabled: true,
+                maxNotificationsDisplay: 5,
+                browserSeverities: ['Warning', 'Error', 'Critical'],
+                soundSeverities: ['Warning', 'Error', 'Critical'],
+                bellSeverities: ['Warning', 'Error'],
+                pageViewSeverities: ['Warning', 'Error']
+            };
+            
+            const saved = localStorage.getItem('notificationSettings');
+            notificationSettings = saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+            
+            // Update UI with loaded settings
+            document.getElementById('sound-enabled').checked = notificationSettings.soundEnabled;
+            document.getElementById('browser-notifications-enabled').checked = notificationSettings.browserNotificationsEnabled;
+            document.getElementById('max-notifications').value = notificationSettings.maxNotificationsDisplay;
+            
+            // Set multi-select values
+            setMultiSelectValues('browser-severity-filter', notificationSettings.browserSeverities);
+            setMultiSelectValues('sound-severity-filter', notificationSettings.soundSeverities);
+            setMultiSelectValues('bell-severity-filter', notificationSettings.bellSeverities);
+        }
+
         // Save settings
         function saveSettings() {
-            const settings = {
+            notificationSettings = {
+                ...notificationSettings,
                 soundEnabled: document.getElementById('sound-enabled').checked,
                 browserNotificationsEnabled: document.getElementById('browser-notifications-enabled').checked,
-                maxNotificationsDisplay: parseInt(document.getElementById('max-notifications').value)
+                maxNotificationsDisplay: parseInt(document.getElementById('max-notifications').value),
+                browserSeverities: getMultiSelectValues('browser-severity-filter'),
+                soundSeverities: getMultiSelectValues('sound-severity-filter'),
+                bellSeverities: getMultiSelectValues('bell-severity-filter')
             };
 
+            localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+
+            // Update the global notification manager settings
             if (window.notificationManager) {
-                window.notificationManager.updateSettings(settings);
+                window.notificationManager.updateSettings(notificationSettings);
             }
 
             // Close modal
@@ -446,6 +531,21 @@
     </script>
 
     <style>
+        .notification-dropdown {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .notification-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
         .notification-card {
             transition: all 0.3s ease;
         }
