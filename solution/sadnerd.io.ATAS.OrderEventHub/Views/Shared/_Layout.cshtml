@@ -51,8 +51,8 @@
                                     0
                                 </span>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 350px; max-width: 90vw; max-height: 400px; overflow-y: auto; overflow-x: hidden;">
-                                <div class="dropdown-header d-flex justify-content-between align-items-center">
+                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 350px; max-width: 90vw; max-height: 400px; overflow: hidden;">
+                                <div class="dropdown-header d-flex justify-content-between align-items-center position-sticky" style="top: 0; background: inherit; z-index: 1;">
                                     <span class="text-truncate">Notifications</span>
                                     <div class="flex-shrink-0">
                                         <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-notifications-btn">
@@ -64,7 +64,7 @@
                                     </div>
                                 </div>
                                 <div class="dropdown-divider"></div>
-                                <div id="notification-list">
+                                <div id="notification-list" style="max-height: 320px; overflow-y: auto; overflow-x: hidden;">
                                     <div class="dropdown-item-text text-muted text-center">
                                         No notifications
                                     </div>

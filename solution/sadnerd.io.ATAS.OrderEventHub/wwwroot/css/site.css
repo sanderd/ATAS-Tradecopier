@@ -73,15 +73,6 @@ body {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* For dark theme, use a darker hover background */
-[data-bs-theme="dark"] .notification-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-bs-theme="dark"] .notification-item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.125);
-}
-
 .notification-card {
     transition: all 0.3s ease;
     border-left: 4px solid transparent;
@@ -90,6 +81,15 @@ body {
 .notification-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* For dark theme, use a darker hover background */
+[data-bs-theme="dark"] .notification-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .notification-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.125);
 }
 
 .severity-info {
