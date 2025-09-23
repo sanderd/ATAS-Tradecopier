@@ -33,5 +33,9 @@
 	  <None Include="wwwroot\**">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
+  </ItemGroup>  
+
+  <ItemGroup>
+    <Content Remove="wwwroot\js\notifications.js" />
   </ItemGroup>
 </Project>

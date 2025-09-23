@@ -1,0 +1,583 @@
+@page "/Notifications"
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.Notifications.IndexModel
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-bell"></i> Notifications</h1>
+            <div>
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+                <button type="button" class="btn btn-outline-danger" onclick="clearAllNotifications()">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title">Filters</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="severity-filter" multiple size="4">
+                            <option value="Info">Info</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                        <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="time-filter" class="form-label">Time Range</label>
+                        <select class="form-select" id="time-filter">
+                            <option value="">All Time</option>
+                            <option value="1h">Last Hour</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="search-filter" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search-filter" placeholder="Search in title or message...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" onclick="applyFilters()">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="notifications-container">
+            <!-- Notifications will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-5" style="display: none;">
+            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No notifications found</h5>
+            <p class="text-muted">There are no notifications matching your current filters.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">
+                    <i class="fas fa-cog"></i> Notification Settings
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Browser Notification Settings -->
+                <h6 class="mb-3">Browser Notifications</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="browser-severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="browser-severity-filter" multiple size="4">
+                            <option value="Info">Info</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
+                            <option value="Critical" selected>Critical</option>
+                        </select>
+                        <div class="form-text">Notifications that trigger browser alerts</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="browser-notifications-enabled" checked>
+                            <label class="form-check-label" for="browser-notifications-enabled">
+                                <i class="fas fa-desktop"></i> Enable Browser Notifications
+                            </label>
+                            <div class="form-text">Show desktop notifications</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Sound Notification Settings -->
+                <h6 class="mb-3">Sound Notifications</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="sound-severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="sound-severity-filter" multiple size="4">
+                            <option value="Info">Info</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
+                            <option value="Critical" selected>Critical</option>
+                        </select>
+                        <div class="form-text">Notifications that trigger sound alerts</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="sound-enabled" checked>
+                            <label class="form-check-label" for="sound-enabled">
+                                <i class="fas fa-volume-up"></i> Enable Sound Notifications
+                            </label>
+                            <div class="form-text">Play sounds for notifications</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Bell Dropdown Settings -->
+                <h6 class="mb-3">Notification Bell</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="bell-severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="bell-severity-filter" multiple size="4">
+                            <option value="Info">Info</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
+                            <option value="Critical" selected>Critical</option>
+                        </select>
+                        <div class="form-text">Notifications shown in bell dropdown</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="max-notifications" class="form-label">
+                                <i class="fas fa-list"></i> Max Notifications in Dropdown
+                            </label>
+                            <input type="number" class="form-control" id="max-notifications" value="5" min="1" max="20">
+                            <div class="form-text">Number of notifications to show in the bell dropdown</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="mb-3">
+                    <h6>Test Sound Notifications</h6>
+                    <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testSound('info')">Info</button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="testSound('warning')">Warning</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="testSound('error')">Error</button>
+                        <button type="button" class="btn btn-outline-dark btn-sm" onclick="testSound('critical')">Critical</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let allNotifications = [];
+        let filteredNotifications = [];
+        let notificationSettings = {};
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotificationSettings();
+            loadNotifications();
+            setupRealTimeUpdates();
+            
+            // Set default severity filter from localStorage
+            loadSeverityFilter();
+        });
+
+        // Load notification settings from localStorage
+        function loadNotificationSettings() {
+            const defaultSettings = {
+                soundEnabled: true,
+                browserNotificationsEnabled: true,
+                maxNotificationsDisplay: 5,
+                browserSeverities: ['Warning', 'Error', 'Critical'],
+                soundSeverities: ['Warning', 'Error', 'Critical'],
+                bellSeverities: ['Warning', 'Error'],
+                pageViewSeverities: ['Warning', 'Error']
+            };
+            
+            const saved = localStorage.getItem('notificationSettings');
+            notificationSettings = saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+            
+            // Update UI with loaded settings
+            document.getElementById('sound-enabled').checked = notificationSettings.soundEnabled;
+            document.getElementById('browser-notifications-enabled').checked = notificationSettings.browserNotificationsEnabled;
+            document.getElementById('max-notifications').value = notificationSettings.maxNotificationsDisplay;
+            
+            // Set multi-select values
+            setMultiSelectValues('browser-severity-filter', notificationSettings.browserSeverities);
+            setMultiSelectValues('sound-severity-filter', notificationSettings.soundSeverities);
+            setMultiSelectValues('bell-severity-filter', notificationSettings.bellSeverities);
+        }
+
+        // Save settings
+        function saveSettings() {
+            notificationSettings = {
+                ...notificationSettings,
+                soundEnabled: document.getElementById('sound-enabled').checked,
+                browserNotificationsEnabled: document.getElementById('browser-notifications-enabled').checked,
+                maxNotificationsDisplay: parseInt(document.getElementById('max-notifications').value),
+                browserSeverities: getMultiSelectValues('browser-severity-filter'),
+                soundSeverities: getMultiSelectValues('sound-severity-filter'),
+                bellSeverities: getMultiSelectValues('bell-severity-filter')
+            };
+
+            localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+
+            // Update the global notification manager settings
+            if (window.notificationManager) {
+                window.notificationManager.updateSettings(notificationSettings);
+            }
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('settingsModal'));
+            modal.hide();
+
+            // Show success message
+            showToast('Settings saved successfully!', 'success');
+        }
+
+        // Load notifications from API
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notifications?count=100');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Raw API response:', data); // Debug logging
+                
+                // Normalize the data to ensure consistent structure
+                allNotifications = (data || []).map(notification => {
+                    // Handle both Pascal case (from API) and camel case (from SignalR)
+                    const normalized = {
+                        Id: notification.Id || notification.id || 'unknown',
+                        Title: notification.Title || notification.title || 'Notification',
+                        Message: notification.Message || notification.message || 'No message',
+                        Severity: normalizeSeverity(notification.Severity || notification.severity),
+                        Timestamp: notification.Timestamp || notification.timestamp || new Date().toISOString(),
+                        Source: notification.Source || notification.source || '',
+                        Metadata: notification.Metadata || notification.metadata || {}
+                    };
+                    
+                    console.log('Normalized notification:', normalized); // Debug logging
+                    return normalized;
+                });
+                
+                filteredNotifications = [...allNotifications];
+                applyFilters();
+            } catch (error) {
+                console.error('Failed to load notifications:', error);
+                showToast('Failed to load notifications', 'error');
+            }
+        }
+
+        // Normalize severity to ensure it's a string
+        function normalizeSeverity(severity) {
+            if (typeof severity === 'number') {
+                // Convert enum number to string
+                const severityMap = { 0: 'Info', 1: 'Warning', 2: 'Error', 3: 'Critical' };
+                return severityMap[severity] || 'Info';
+            } else if (!severity) {
+                return 'Info';
+            }
+            return severity.toString();
+        }
+
+        // Setup real-time updates
+        function setupRealTimeUpdates() {
+            window.addEventListener('notificationReceived', function(event) {
+                allNotifications.unshift(event.detail);
+                applyFilters();
+            });
+        }
+
+        // Load severity filter from localStorage
+        function loadSeverityFilter() {
+            const savedFilter = localStorage.getItem('notificationPageSeverityFilter');
+            if (savedFilter) {
+                try {
+                    const severities = JSON.parse(savedFilter);
+                    setMultiSelectValues('severity-filter', severities);
+                } catch (e) {
+                    // If parsing fails, use defaults
+                    setMultiSelectValues('severity-filter', notificationSettings.pageViewSeverities);
+                }
+            } else {
+                // Use settings default
+                setMultiSelectValues('severity-filter', notificationSettings.pageViewSeverities);
+            }
+        }
+
+        // Save severity filter to localStorage
+        function saveSeverityFilter() {
+            const selectedSeverities = getMultiSelectValues('severity-filter');
+            localStorage.setItem('notificationPageSeverityFilter', JSON.stringify(selectedSeverities));
+        }
+
+        // Helper functions for multi-select
+        function setMultiSelectValues(selectId, values) {
+            const select = document.getElementById(selectId);
+            if (select) {
+                Array.from(select.options).forEach(option => {
+                    option.selected = values.includes(option.value);
+                });
+            }
+        }
+
+        function getMultiSelectValues(selectId) {
+            const select = document.getElementById(selectId);
+            return select ? Array.from(select.selectedOptions).map(option => option.value) : [];
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const selectedSeverities = getMultiSelectValues('severity-filter');
+            const timeFilter = document.getElementById('time-filter').value;
+            const searchFilter = document.getElementById('search-filter').value.toLowerCase();
+
+            // Save the current severity filter
+            saveSeverityFilter();
+
+            filteredNotifications = allNotifications.filter(notification => {
+                // Severity filter
+                if (selectedSeverities.length > 0 && !selectedSeverities.includes(notification.Severity)) {
+                    return false;
+                }
+
+                // Time filter
+                if (timeFilter && notification.Timestamp) {
+                    try {
+                        const notificationTime = new Date(notification.Timestamp);
+                        const now = new Date();
+                        const diffMs = now - notificationTime;
+
+                        switch (timeFilter) {
+                            case '1h':
+                                if (diffMs > 3600000) return false;
+                                break;
+                            case '24h':
+                                if (diffMs > 86400000) return false;
+                                break;
+                            case '7d':
+                                if (diffMs > 604800000) return false;
+                                break;
+                        }
+                    } catch (err) {
+                        // If timestamp is invalid, include the notification
+                    }
+                }
+
+                // Search filter
+                if (searchFilter) {
+                    const searchableText = (notification.Title + ' ' + notification.Message).toLowerCase();
+                    if (!searchableText.includes(searchFilter)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderNotifications();
+        }
+
+        // Render notifications
+        function renderNotifications() {
+            const container = document.getElementById('notifications-container');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filteredNotifications.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            const html = filteredNotifications.map(notification => {
+                const severity = notification.Severity || 'Info';
+                const title = notification.Title || 'Notification';
+                const message = notification.Message || 'No message';
+                const timestamp = notification.Timestamp || new Date().toISOString();
+                const source = notification.Source || '';
+                const metadata = notification.Metadata || {};
+                const id = notification.Id || 'unknown';
+                
+                return `
+                    <div class="card mb-3 notification-card severity-${severity.toLowerCase()}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="card-title mb-0 me-2">${escapeHtml(title)}</h5>
+                                        <span class="badge bg-${getSeverityColor(severity)}">${severity}</span>
+                                    </div>
+                                    <p class="card-text">${escapeHtml(message)}</p>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-clock"></i> ${formatTimestamp(timestamp)}
+                                        ${source ? `<span class="ms-3"><i class="fas fa-tag"></i> ${escapeHtml(source)}</span>` : ''}
+                                    </div>
+                                    ${Object.keys(metadata).length > 0 ? `
+                                        <div class="mt-2">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#metadata-${escapeHtml(id)}" aria-expanded="false">
+                                                <i class="fas fa-info-circle"></i> Show Details
+                                            </button>
+                                            <div class="collapse mt-2" id="metadata-${escapeHtml(id)}">
+                                                <div class="card card-body bg-light">
+                                                    <small>
+                                                        ${Object.entries(metadata).map(([key, value]) => `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}`).join('<br>')}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Helper functions
+        function escapeHtml(unsafe) {
+            if (unsafe == null) return '';
+            return unsafe.toString()
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        function getSeverityColor(severity) {
+            const colors = {
+                'Info': 'primary',
+                'Warning': 'warning',
+                'Error': 'danger',
+                'Critical': 'danger'
+            };
+            return colors[severity] || 'secondary';
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        function showToast(message, type = 'info') {
+            // Simple toast implementation - could be enhanced with a proper toast library
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        }
+
+        async function clearAllNotifications() {
+            if (!confirm('Are you sure you want to clear all notifications?')) {
+                return;
+            }
+
+            try {
+                await fetch('/api/notifications', { method: 'DELETE' });
+                allNotifications = [];
+                filteredNotifications = [];
+                renderNotifications();
+                showToast('All notifications cleared successfully!', 'success');
+            } catch (error) {
+                console.error('Failed to clear notifications:', error);
+                showToast('Failed to clear notifications', 'error');
+            }
+        }
+
+        function testSound(severity) {
+            if (window.notificationManager) {
+                window.notificationManager.playSound(severity.charAt(0).toUpperCase() + severity.slice(1));
+            }
+        }
+
+        // Setup event listeners
+        document.getElementById('search-filter').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+
+        // Auto-apply filters when severity selection changes
+        document.getElementById('severity-filter').addEventListener('change', applyFilters);
+    </script>
+
+    <style>
+        .notification-dropdown {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .notification-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .notification-card {
+            transition: all 0.3s ease;
+        }
+
+        .notification-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .severity-info {
+            border-left: 4px solid #0d6efd;
+        }
+
+        .severity-warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        .severity-error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .severity-critical {
+            border-left: 4px solid #6c757d;
+            background-color: #f8f9fa;
+        }
+    </style>
+}

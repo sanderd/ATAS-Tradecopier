@@ -6,6 +6,11 @@
       "provider": "cdnjs",
       "library": "bootstrap@5.3.3",
       "destination": "wwwroot/lib/bootstrap/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "microsoft-signalr@8.0.0",
+      "destination": "wwwroot/lib/signalr/"
     }
   ]
 }

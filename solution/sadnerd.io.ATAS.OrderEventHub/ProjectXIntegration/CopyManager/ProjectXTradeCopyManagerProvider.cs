@@ -2,6 +2,7 @@
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
 using sadnerd.io.ATAS.OrderEventHub.Factories;
+using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications;
 using sadnerd.io.ATAS.ProjectXApiClient;
 
 namespace sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
@@ -83,6 +84,7 @@ public class ProjectXTradeCopyManagerProvider
             }
 
             var clientFactory = _serviceProvider.GetRequiredService<IProjectXClientFactory>();
+            var notificationService = _serviceProvider.GetRequiredService<INotificationService>();
             
             IProjectXClient projectXClient;
             if (apiCredentialId.HasValue)
@@ -97,6 +99,7 @@ public class ProjectXTradeCopyManagerProvider
             var manager = new ProjectXTradeCopyManager(
                 projectXClient,
                 _serviceProvider.GetRequiredService<ILogger<ProjectXTradeCopyManager>>(),
+                notificationService,
                 contractMultiplier,
                 projectXAccount,
                 projectXInstrument
