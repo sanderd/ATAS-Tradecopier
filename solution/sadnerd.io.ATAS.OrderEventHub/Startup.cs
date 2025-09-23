@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
+using sadnerd.io.ATAS.OrderEventHub.Configuration;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Factories;
@@ -32,6 +33,12 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        // Configure application options
+        services.Configure<ApplicationOptions>(Configuration.GetSection(ApplicationOptions.SectionName));
+        
+        // Configure ServiceWire options
+        services.Configure<ServiceWireOptions>(Configuration.GetSection(ServiceWireOptions.SectionName));
+
         services.AddSignalR();
         services.AddHostedService<ServiceWireWorker>();
         services.AddHostedService<CopyStrategyInitializationService>();
