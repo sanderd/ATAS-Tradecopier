@@ -13,7 +13,10 @@ class NotificationManager {
         const defaultSettings = {
             soundEnabled: true,
             browserNotificationsEnabled: true,
-            maxNotificationsDisplay: 5
+            maxNotificationsDisplay: 5,
+            browserSeverities: ['Warning', 'Error', 'Critical'],
+            soundSeverities: ['Warning', 'Error', 'Critical'],
+            bellSeverities: ['Warning', 'Error']
         };
         
         const saved = localStorage.getItem('notificationSettings');
@@ -74,10 +77,10 @@ class NotificationManager {
 
     async loadSounds() {
         const sounds = {
-            info: this.generateTone(800, 0.1, 0.05),
-            warning: this.generateTone(600, 0.2, 0.1),
-            error: this.generateTone(400, 0.3, 0.15),
-            critical: this.generateTone(300, 0.5, 0.2)
+            info: this.generateTone(800, 0.2, 0.05),
+            warning: this.generateTone(600, 0.4, 0.1),
+            error: this.generateTone(400, 0.6, 0.15),
+            critical: this.generateTone(300, 0.8, 0.2)
         };
 
         for (const [name, buffer] of Object.entries(sounds)) {
@@ -203,7 +206,12 @@ class NotificationManager {
         const badge = document.getElementById('notification-badge');
         if (!badge) return;
 
-        const count = this.notifications.length;
+        // Count notifications based on bell severity settings
+        const count = this.notifications.filter(notification => {
+            const severity = notification.Severity || 'Info';
+            return this.settings.bellSeverities.includes(severity);
+        }).length;
+
         if (count > 0) {
             badge.textContent = count > 99 ? '99+' : count.toString();
             badge.style.display = 'block';
@@ -216,12 +224,18 @@ class NotificationManager {
         const container = document.getElementById('notification-list');
         if (!container) return;
 
-        if (this.notifications.length === 0) {
+        // Filter notifications based on bell severity settings
+        const bellNotifications = this.notifications.filter(notification => {
+            const severity = notification.Severity || 'Info';
+            return this.settings.bellSeverities.includes(severity);
+        });
+
+        if (bellNotifications.length === 0) {
             container.innerHTML = '<div class="dropdown-item-text text-muted text-center">No notifications</div>';
             return;
         }
 
-        const recentNotifications = this.notifications.slice(0, this.settings.maxNotificationsDisplay);
+        const recentNotifications = bellNotifications.slice(0, this.settings.maxNotificationsDisplay);
         const html = recentNotifications.map(notification => {
             // Defensive checks for notification properties
             const severity = notification.Severity || 'Info';
@@ -246,11 +260,11 @@ class NotificationManager {
         container.innerHTML = html;
 
         // Add "View All" link if there are more notifications
-        if (this.notifications.length > this.settings.maxNotificationsDisplay) {
+        if (bellNotifications.length > this.settings.maxNotificationsDisplay) {
             container.innerHTML += `
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item text-center text-primary" href="/Notifications">
-                    View All (${this.notifications.length})
+                    View All (${bellNotifications.length})
                 </a>
             `;
         }
@@ -289,6 +303,9 @@ class NotificationManager {
     playSound(severity) {
         if (!this.settings.soundEnabled || !this.audioContext || !this.soundBuffers) return;
 
+        // Check if this severity should trigger sound notifications
+        if (!this.settings.soundSeverities.includes(severity)) return;
+
         try {
             const soundName = (severity || 'info').toLowerCase();
             const buffer = this.soundBuffers[soundName] || this.soundBuffers['info'];
@@ -310,6 +327,10 @@ class NotificationManager {
             Notification.permission !== 'granted') {
             return;
         }
+
+        // Check if this severity should trigger browser notifications
+        const severity = notification.Severity || 'Info';
+        if (!this.settings.browserSeverities.includes(severity)) return;
 
         try {
             const title = notification.Title || 'Notification';
