@@ -186,18 +186,5 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
                 }
             }
         }
-
-        // Legacy method for backward compatibility
-        public static bool TryRegisterStrategy(string strategyKey)
-        {
-            // This method is no longer used but kept for compatibility
-            return false;
-        }
-
-        // Legacy method for backward compatibility  
-        public static void UnregisterStrategy(string strategyKey)
-        {
-            // This method is no longer used but kept for compatibility
-        }
     }
 }
