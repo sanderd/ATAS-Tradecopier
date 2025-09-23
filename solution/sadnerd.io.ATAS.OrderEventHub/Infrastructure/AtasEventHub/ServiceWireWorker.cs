@@ -18,7 +18,7 @@ public class ServiceWireWorker : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var ipEndpoint = new IPEndPoint(IPAddress.Loopback, 12345);
+        var ipEndpoint = new IPEndPoint(IPAddress.Loopback, 35144);
         _tcphost = new TcpHost(ipEndpoint);
         _tcphost.AddService(_orderEventHubDispatchService);
         _tcphost.Open();

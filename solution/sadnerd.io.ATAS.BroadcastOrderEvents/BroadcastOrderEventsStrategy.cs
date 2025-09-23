@@ -22,7 +22,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 
         // Configuration properties
         private string _serverIpAddress = "127.0.0.1";
-        private int _serverPort = 12345;
+        private int _serverPort = 35144;
 
         [Parameter]
         [Display(Name = "Server IP Address", GroupName = "Connection Settings", Description = "IP address of the ServiceWire backend server")]
@@ -113,6 +113,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             // Register based on current portfolio and security if available
             RegisterForCurrentAccountInstrument();
         }
+
         protected override void OnNewOrder(Order order)
         {
             if (!ShouldProcessEvents()) return;
