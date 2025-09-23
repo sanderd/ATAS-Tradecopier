@@ -104,10 +104,19 @@ public class Startup
         app.UseRouting();
 
         // Allow CORS from TopstepX for SignalR connections (used in case of Browser Automation)
+        // Also allow localhost for local development
         app.UseCors(builder =>
         {
-            builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com").AllowAnyMethod().AllowAnyHeader()
-                .AllowCredentials();
+            if (env.IsDevelopment())
+            {
+                builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com", "http://localhost:5000", "https://localhost:5001")
+                    .AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+            }
+            else
+            {
+                builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com")
+                    .AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+            }
         });
 
         app.UseAuthorization();
