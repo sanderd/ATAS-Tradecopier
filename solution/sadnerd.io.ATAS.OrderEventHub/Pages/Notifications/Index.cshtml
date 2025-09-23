@@ -174,13 +174,48 @@
         async function loadNotifications() {
             try {
                 const response = await fetch('/api/notifications?count=100');
-                allNotifications = await response.json();
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Raw API response:', data); // Debug logging
+                
+                // Normalize the data to ensure consistent structure
+                allNotifications = (data || []).map(notification => {
+                    // Handle both Pascal case (from API) and camel case (from SignalR)
+                    const normalized = {
+                        Id: notification.Id || notification.id || 'unknown',
+                        Title: notification.Title || notification.title || 'Notification',
+                        Message: notification.Message || notification.message || 'No message',
+                        Severity: normalizeSeverity(notification.Severity || notification.severity),
+                        Timestamp: notification.Timestamp || notification.timestamp || new Date().toISOString(),
+                        Source: notification.Source || notification.source || '',
+                        Metadata: notification.Metadata || notification.metadata || {}
+                    };
+                    
+                    console.log('Normalized notification:', normalized); // Debug logging
+                    return normalized;
+                });
+                
                 filteredNotifications = [...allNotifications];
-                renderNotifications();
+                applyFilters();
             } catch (error) {
                 console.error('Failed to load notifications:', error);
                 showToast('Failed to load notifications', 'error');
             }
+        }
+
+        // Normalize severity to ensure it's a string
+        function normalizeSeverity(severity) {
+            if (typeof severity === 'number') {
+                // Convert enum number to string
+                const severityMap = { 0: 'Info', 1: 'Warning', 2: 'Error', 3: 'Critical' };
+                return severityMap[severity] || 'Info';
+            } else if (!severity) {
+                return 'Info';
+            }
+            return severity.toString();
         }
 
         // Setup real-time updates
@@ -198,21 +233,15 @@
             const searchFilter = document.getElementById('search-filter').value.toLowerCase();
 
             filteredNotifications = allNotifications.filter(notification => {
-                // Defensive checks
-                const severity = notification.Severity || 'Info';
-                const title = notification.Title || '';
-                const message = notification.Message || '';
-                const timestamp = notification.Timestamp;
-
                 // Severity filter
-                if (severityFilter && severity !== severityFilter) {
+                if (severityFilter && notification.Severity !== severityFilter) {
                     return false;
                 }
 
                 // Time filter
-                if (timeFilter && timestamp) {
+                if (timeFilter && notification.Timestamp) {
                     try {
-                        const notificationTime = new Date(timestamp);
+                        const notificationTime = new Date(notification.Timestamp);
                         const now = new Date();
                         const diffMs = now - notificationTime;
 
@@ -234,7 +263,7 @@
 
                 // Search filter
                 if (searchFilter) {
-                    const searchableText = (title + ' ' + message).toLowerCase();
+                    const searchableText = (notification.Title + ' ' + notification.Message).toLowerCase();
                     if (!searchableText.includes(searchFilter)) {
                         return false;
                     }
@@ -260,7 +289,6 @@
             emptyState.style.display = 'none';
 
             const html = filteredNotifications.map(notification => {
-                // Defensive checks for notification properties
                 const severity = notification.Severity || 'Info';
                 const title = notification.Title || 'Notification';
                 const message = notification.Message || 'No message';
@@ -275,23 +303,23 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="flex-grow-1">
                                     <div class="d-flex align-items-center mb-2">
-                                        <h5 class="card-title mb-0 me-2">${title}</h5>
+                                        <h5 class="card-title mb-0 me-2">${escapeHtml(title)}</h5>
                                         <span class="badge bg-${getSeverityColor(severity)}">${severity}</span>
                                     </div>
-                                    <p class="card-text">${message}</p>
+                                    <p class="card-text">${escapeHtml(message)}</p>
                                     <div class="text-muted small">
                                         <i class="fas fa-clock"></i> ${formatTimestamp(timestamp)}
-                                        ${source ? `<span class="ms-3"><i class="fas fa-tag"></i> ${source}</span>` : ''}
+                                        ${source ? `<span class="ms-3"><i class="fas fa-tag"></i> ${escapeHtml(source)}</span>` : ''}
                                     </div>
                                     ${Object.keys(metadata).length > 0 ? `
                                         <div class="mt-2">
-                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#metadata-${id}" aria-expanded="false">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#metadata-${escapeHtml(id)}" aria-expanded="false">
                                                 <i class="fas fa-info-circle"></i> Show Details
                                             </button>
-                                            <div class="collapse mt-2" id="metadata-${id}">
+                                            <div class="collapse mt-2" id="metadata-${escapeHtml(id)}">
                                                 <div class="card card-body bg-light">
                                                     <small>
-                                                        ${Object.entries(metadata).map(([key, value]) => `<strong>${key}:</strong> ${value}`).join('<br>')}
+                                                        ${Object.entries(metadata).map(([key, value]) => `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}`).join('<br>')}
                                                     </small>
                                                 </div>
                                             </div>
@@ -308,6 +336,16 @@
         }
 
         // Helper functions
+        function escapeHtml(unsafe) {
+            if (unsafe == null) return '';
+            return unsafe.toString()
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
         function getSeverityColor(severity) {
             const colors = {
                 'Info': 'primary',
