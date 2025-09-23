@@ -15,6 +15,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
     public class BroadcastOrderEventsStrategy : ChartStrategy
     {
         private bool _isStarted = false;
+        private bool _isActiveForCurrentPair = false;
         private IOrderEventHubDispatchService _orderEventHubDispatchService;
         private readonly IDictionary<string, decimal> _lastReportedPosition = new Dictionary<string, decimal>();
         private string _currentRegisteredPair = string.Empty;
@@ -50,14 +51,58 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 
         public BroadcastOrderEventsStrategy()
         {
+            
+            // Subscribe to TradingManager events for portfolio and security changes
+            this.TradingManager.PortfolioSelected += OnPortfolioSelected;
+            this.TradingManager.SecuritySelected += OnSecuritySelected;
+            
+            // Register based on current portfolio and security if available
+            RegisterForCurrentAccountInstrument();
+        }
+
+        private void OnPortfolioSelected(Portfolio portfolio)
+        {
+            System.Diagnostics.Debug.WriteLine($"Portfolio selected: {portfolio.AccountID}");
+            RegisterForCurrentAccountInstrument();
+        }
+
+        private void OnSecuritySelected(Security security)
+        {
+            System.Diagnostics.Debug.WriteLine($"Security selected: {security.SecurityId}");
+            RegisterForCurrentAccountInstrument();
+        }
+
+        private void RegisterForCurrentAccountInstrument()
+        {
+            try
+            {
+                var accountId = this.TradingManager.Portfolio?.AccountID ?? "";
+                var instrumentId = this.TradingManager.Security?.SecurityId ?? "";
+                
+                if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(instrumentId))
+                {
+                    UpdateRegistration(accountId, instrumentId);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error registering for current account/instrument: {ex.Message}");
+            }
+        }
+
+        public void OnActivated()
+        {
+            // Called by ServiceLocator when this strategy becomes active for the current pair
+            _isActiveForCurrentPair = true;
+            System.Diagnostics.Debug.WriteLine($"Strategy activated for {_currentRegisteredPair}");
+            
+            // Clear position history when becoming active
+            _lastReportedPosition.Clear();
         }
 
         protected override void OnNewOrder(Order order)
         {
             if (!ShouldProcessEvents()) return;
-            
-            // Update registration for current account/instrument if it changed
-            UpdateRegistrationFromOrder(order);
             
             var mappedMessage = ServiceLocator.OrderToNewOrderEventMapper.Map(order);
             _orderEventHubDispatchService.NewOrder(mappedMessage);
@@ -67,9 +112,6 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             if (!ShouldProcessEvents()) return;
             
-            // Update registration for current account/instrument if it changed
-            UpdateRegistrationFromOrder(order);
-            
             var mappedMessage = ServiceLocator.OrderToOrderChangedEventMapper.Map(order);
             _orderEventHubDispatchService.OrderChanged(mappedMessage);
         }
@@ -77,9 +119,6 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         protected override void OnPositionChanged(Position position)
         {
             if (!ShouldProcessEvents()) return;
-            
-            // Update registration for current account/instrument if it changed
-            UpdateRegistrationFromPosition(position);
             
             bool report = false;
             string positionKey = GetPositionKey(position);
@@ -109,6 +148,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         protected override void OnStarted()
         {
             _isStarted = true;
+            RegisterForCurrentAccountInstrument();
             base.OnStarted();
         }
 
@@ -121,12 +161,13 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         protected override void OnStopping()
         {
             _isStarted = false;
+            _isActiveForCurrentPair = false;
             _lastReportedPosition.Clear();
             
             // Unregister the current account/instrument pair
             if (!string.IsNullOrEmpty(_currentRegisteredPair))
             {
-                ServiceLocator.UnregisterStrategy(_currentRegisteredPair);
+                ServiceLocator.UnregisterStrategy(_currentRegisteredPair, this);
                 _currentRegisteredPair = string.Empty;
             }
 
@@ -135,45 +176,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 
         private bool ShouldProcessEvents()
         {
-            return _isStarted;
-        }
-
-        private void UpdateRegistrationFromOrder(Order order)
-        {
-            try
-            {
-                var accountId = GetOrderProperty(order, "AccountId", "Account")?.ToString() ?? "";
-                var instrumentId = GetOrderProperty(order, "ContractId", "SecurityId", "Symbol")?.ToString() ?? "";
-                
-                if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(instrumentId))
-                {
-                    UpdateRegistration(accountId, instrumentId);
-                }
-            }
-            catch
-            {
-                // Ignore registration errors for orders
-                System.Diagnostics.Debug.WriteLine("Failed to update registration from order");
-            }
-        }
-
-        private void UpdateRegistrationFromPosition(Position position)
-        {
-            try
-            {
-                var accountId = GetPositionProperty(position, "AccountId", "Account")?.ToString() ?? "";
-                var instrumentId = GetPositionProperty(position, "ContractId", "SecurityId", "Symbol")?.ToString() ?? "";
-                
-                if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(instrumentId))
-                {
-                    UpdateRegistration(accountId, instrumentId);
-                }
-            }
-            catch
-            {
-                // Ignore registration errors for positions
-                System.Diagnostics.Debug.WriteLine("Failed to update registration from position");
-            }
+            return _isStarted && _isActiveForCurrentPair;
         }
 
         private void UpdateRegistration(string accountId, string instrumentId)
@@ -186,22 +189,25 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
                 // Unregister the old pair if it exists
                 if (!string.IsNullOrEmpty(_currentRegisteredPair))
                 {
-                    ServiceLocator.UnregisterStrategy(_currentRegisteredPair);
+                    ServiceLocator.UnregisterStrategy(_currentRegisteredPair, this);
+                    _isActiveForCurrentPair = false;
                 }
                 
                 // Try to register the new pair
-                if (ServiceLocator.TryRegisterStrategy(newPair))
+                if (ServiceLocator.TryRegisterStrategy(newPair, this))
                 {
                     _currentRegisteredPair = newPair;
-                    System.Diagnostics.Debug.WriteLine($"Strategy switched to Account {accountId} and Instrument {instrumentId}");
+                    _isActiveForCurrentPair = true;
+                    System.Diagnostics.Debug.WriteLine($"Strategy registered and activated for Account {accountId} and Instrument {instrumentId}");
                     
                     // Clear position history when switching account/instrument
                     _lastReportedPosition.Clear();
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Cannot switch to Account {accountId} and Instrument {instrumentId} - another strategy is already active for this combination");
-                    _currentRegisteredPair = string.Empty;
+                    _currentRegisteredPair = newPair; // Still track the pair even if not active
+                    _isActiveForCurrentPair = false;
+                    System.Diagnostics.Debug.WriteLine($"Strategy registered but not active for Account {accountId} and Instrument {instrumentId} - another strategy is already active");
                 }
             }
         }
