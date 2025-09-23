@@ -239,19 +239,19 @@ class NotificationManager {
         const html = recentNotifications.map(notification => {
             // Defensive checks for notification properties
             const severity = notification.Severity || 'Info';
-            const title = notification.Title || 'Notification';
-            const message = notification.Message || 'No message';
+            const title = this.escapeHtml(notification.Title || 'Notification');
+            const message = this.escapeHtml(notification.Message || 'No message');
             const timestamp = notification.Timestamp || new Date().toISOString();
             
             return `
                 <div class="dropdown-item notification-item severity-${severity.toLowerCase()}">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <h6 class="dropdown-header mb-1 text-${this.getSeverityColor(severity)}">${title}</h6>
+                        <div class="flex-grow-1 min-w-0">
+                            <h6 class="dropdown-header mb-1 text-${this.getSeverityColor(severity)}" title="${title}">${title}</h6>
                             <p class="mb-1 small">${message}</p>
                             <small class="text-muted">${this.formatTimestamp(timestamp)}</small>
                         </div>
-                        <span class="badge bg-${this.getSeverityColor(severity)}">${severity}</span>
+                        <span class="badge bg-${this.getSeverityColor(severity)} flex-shrink-0">${severity}</span>
                     </div>
                 </div>
             `;
@@ -268,6 +268,17 @@ class NotificationManager {
                 </a>
             `;
         }
+    }
+
+    // Helper function to escape HTML
+    escapeHtml(unsafe) {
+        if (unsafe == null) return '';
+        return unsafe.toString()
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
     }
 
     getSeverityColor(severity) {

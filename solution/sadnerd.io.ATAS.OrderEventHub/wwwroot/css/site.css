@@ -25,12 +25,48 @@ body {
 .notification-dropdown {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(0, 0, 0, 0.125);
+    width: 350px !important;
+    max-width: 90vw; /* Ensure it doesn't exceed viewport width on small screens */
+    overflow-x: hidden; /* Prevent horizontal scrollbar */
 }
 
 .notification-item {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid #f8f9fa;
     transition: background-color 0.15s ease-in-out;
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Modern browsers */
+    max-width: 100%; /* Ensure content fits container */
+}
+
+.notification-item .flex-grow-1 {
+    min-width: 0; /* Allow flex item to shrink below content size */
+    overflow: hidden; /* Prevent content from overflowing */
+}
+
+.notification-item h6 {
+    white-space: normal; /* Allow title to wrap to multiple lines */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 200px; /* Limit title width to leave space for badge */
+}
+
+.notification-item p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    margin-bottom: 0.25rem;
+    white-space: normal; /* Allow message to wrap to multiple lines */
+}
+
+.notification-item small {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.notification-item .badge {
+    flex-shrink: 0; /* Prevent badge from shrinking */
+    margin-left: 0.5rem;
 }
 
 .notification-item:hover {
