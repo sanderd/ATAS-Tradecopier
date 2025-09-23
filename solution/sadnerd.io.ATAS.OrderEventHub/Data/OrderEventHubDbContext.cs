@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data.Models;
+using sadnerd.io.ATAS.OrderEventHub.Identity;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Data;
 
-public class OrderEventHubDbContext : DbContext
+public class OrderEventHubDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
     public DbSet<AtasAccount> AtasAccounts { get; set; }
     public DbSet<ProjectXAccount> ProjectXAccounts { get; set; }
@@ -19,13 +21,27 @@ public class OrderEventHubDbContext : DbContext
         DbPath = Path.Join(path, "sadnerd.tradecopy.db");
     }
 
+    public OrderEventHubDbContext(DbContextOptions<OrderEventHubDbContext> options) : base(options)
+    {
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+        DbPath = Path.Join(path, "sadnerd.tradecopy.db");
+    }
+
     // The following configures EF to create a Sqlite database file in the
     // special "local" folder for your platform.
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+    {
+        if (!options.IsConfigured)
+        {
+            options.UseSqlite($"Data Source={DbPath}");
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         // Configure ProjectXAccount -> ApiCredential relationship
         modelBuilder.Entity<ProjectXAccount>()
             .HasOne(p => p.ApiCredential)
@@ -37,5 +53,16 @@ public class OrderEventHubDbContext : DbContext
         modelBuilder.Entity<ProjectXApiCredential>()
             .HasIndex(a => new { a.Vendor, a.DisplayName })
             .IsUnique();
+
+        // Configure Identity table names to avoid conflicts
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.ToTable("Users");
+        });
+
+        modelBuilder.Entity<ApplicationRole>(entity =>
+        {
+            entity.ToTable("Roles");
+        });
     }
 }

@@ -18,61 +18,90 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/AtasAccount/Index">Atas Accounts</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/ProjectXAccount/Index">ProjectX Accounts</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/ApiCredentials/Index">API Credentials</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/CopyStrategy/Index">Copy Strategies</a>
-                        </li>
-                        <!-- Testing Menu - Feature Flag Controlled -->
-                        <li class="nav-item dropdown" id="testing-menu" style="display: none;">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="testingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-flask"></i> Testing
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="testingDropdown">
-                                <li><a class="dropdown-item" asp-page="/Testing/Notifications">Notification Testing</a></li>
-                                <li><a class="dropdown-item" asp-page="/Testing/TokenCache">Token Cache Testing</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <!-- Right side navigation items -->
-                    <ul class="navbar-nav">
-                        <!-- Notifications Bell -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link text-dark position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-bell"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge" style="display: none;">
-                                    0
-                                </span>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 350px; max-width: 90vw; max-height: 400px; overflow: hidden;">
-                                <div class="dropdown-header d-flex justify-content-between align-items-center position-sticky" style="top: 0; background: inherit; z-index: 1;">
-                                    <span class="text-truncate">Notifications</span>
-                                    <div class="flex-shrink-0">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-notifications-btn">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        <a asp-page="/Notifications/Index" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </a>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/AtasAccount/Index">Atas Accounts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/ProjectXAccount/Index">ProjectX Accounts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/ApiCredentials/Index">API Credentials</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/CopyStrategy/Index">Copy Strategies</a>
+                            </li>
+                            <!-- Testing Menu - Feature Flag Controlled -->
+                            <li class="nav-item dropdown" id="testing-menu" style="display: none;">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="testingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-flask"></i> Testing
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="testingDropdown">
+                                    <li><a class="dropdown-item" asp-page="/Testing/Notifications">Notification Testing</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Testing/TokenCache">Token Cache Testing</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <!-- Right side navigation items -->
+                        <ul class="navbar-nav">
+                            <!-- Notifications Bell -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link text-dark position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge" style="display: none;">
+                                        0
+                                    </span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 350px; max-width: 90vw; max-height: 400px; overflow: hidden;">
+                                    <div class="dropdown-header d-flex justify-content-between align-items-center position-sticky" style="top: 0; background: inherit; z-index: 1;">
+                                        <span class="text-truncate">Notifications</span>
+                                        <div class="flex-shrink-0">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-notifications-btn">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            <a asp-page="/Notifications/Index" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <div id="notification-list" style="max-height: 320px; overflow-y: auto; overflow-x: hidden;">
+                                        <div class="dropdown-item-text text-muted text-center">
+                                            No notifications
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="dropdown-divider"></div>
-                                <div id="notification-list" style="max-height: 320px; overflow-y: auto; overflow-x: hidden;">
-                                    <div class="dropdown-item-text text-muted text-center">
-                                        No notifications
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+                            </li>
+                            <!-- User Menu -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/Account/Login">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Login
+                                </a>
+                            </li>
+                        </ul>
+                    }
                 </div>
             </div>
         </nav>
@@ -92,22 +121,25 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
-    <!-- Notification System -->
-    <script src="~/lib/signalr/signalr.min.js"></script>
-    <script src="~/js/notifications.js" asp-append-version="true"></script>
-    <script>
-        // Check feature flags and show/hide testing menu
-        fetch('/api/feature-flags/Testing')
-            .then(response => response.json())
-            .then(enabled => {
-                if (enabled) {
-                    document.getElementById('testing-menu').style.display = 'block';
-                }
-            })
-            .catch(() => {
-                // If feature flag endpoint doesn't exist, hide testing menu
-                document.getElementById('testing-menu').style.display = 'none';
-            });
-    </script>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <!-- Notification System - Only for authenticated users -->
+        <script src="~/lib/signalr/signalr.min.js"></script>
+        <script src="~/js/notifications.js" asp-append-version="true"></script>
+        <script>
+            // Check feature flags and show/hide testing menu
+            fetch('/api/feature-flags/Testing')
+                .then(response => response.json())
+                .then(enabled => {
+                    if (enabled) {
+                        document.getElementById('testing-menu').style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    // If feature flag endpoint doesn't exist, hide testing menu
+                    document.getElementById('testing-menu').style.display = 'none';
+                });
+        </script>
+    }
 </body>
 </html>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.OrderEventHub.Data;
@@ -5,6 +6,7 @@ using sadnerd.io.ATAS.OrderEventHub.Data.Models;
 
 namespace sadnerd.io.ATAS.OrderEventHub.Models.Pages.ApiCredentials;
 
+[Authorize]
 public class IndexModel : PageModel
 {
     private readonly OrderEventHubDbContext _context;

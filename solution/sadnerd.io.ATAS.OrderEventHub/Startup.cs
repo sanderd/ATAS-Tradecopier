@@ -1,14 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.OrderEventHub.Data;
 using sadnerd.io.ATAS.OrderEventHub.Data.Services;
 using sadnerd.io.ATAS.OrderEventHub.Factories;
+using sadnerd.io.ATAS.OrderEventHub.Identity;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.AtasEventHub;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.FeatureFlags;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications.SignalR;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications.Sinks;
+using sadnerd.io.ATAS.OrderEventHub.Middleware;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.SignalR;
@@ -33,6 +36,51 @@ public class Startup
         services.AddHostedService<ServiceWireWorker>();
         services.AddHostedService<CopyStrategyInitializationService>();
         services.AddCors();
+
+        // Configure Entity Framework
+        services.AddDbContext<OrderEventHubDbContext>(options =>
+        {
+            var folder = Environment.SpecialFolder.LocalApplicationData;
+            var path = Environment.GetFolderPath(folder);
+            var dbPath = Path.Join(path, "sadnerd.tradecopy.db");
+            options.UseSqlite($"Data Source={dbPath}");
+        });
+
+        // Configure Identity
+        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+        {
+            // Relaxed password settings - require only a password
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 1;
+            options.Password.RequiredUniqueChars = 0;
+
+            // Lockout settings
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.AllowedForNewUsers = true;
+
+            // User settings
+            options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+            options.User.RequireUniqueEmail = false;
+        })
+        .AddEntityFrameworkStores<OrderEventHubDbContext>()
+        .AddDefaultTokenProviders();
+
+        // Configure application cookie
+        services.ConfigureApplicationCookie(options =>
+        {
+            options.Cookie.HttpOnly = true;
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+            options.LoginPath = "/Account/Login";
+            options.AccessDeniedPath = "/Account/Login";
+            options.SlidingExpiration = true;
+        });
+
+        // Add account service
+        services.AddScoped<IAccountService, AccountService>();
 
         // Feature Flags
         services.AddSingleton<IFeatureFlagService, ConfigurationFeatureFlagService>();
@@ -79,7 +127,6 @@ public class Startup
 
         services.AddControllersWithViews();
         services.AddRazorPages();
-        services.AddDbContext<OrderEventHubDbContext>();
 
         services.AddScoped<CopyStrategyService>();
 
@@ -122,7 +169,12 @@ public class Startup
             }
         });
 
+        // Add authentication and authorization middleware
+        app.UseAuthentication();
         app.UseAuthorization();
+
+        // Add first-time setup middleware (after authentication)
+        app.UseFirstTimeSetup();
 
         app.UseEndpoints(endpoints =>
         {
