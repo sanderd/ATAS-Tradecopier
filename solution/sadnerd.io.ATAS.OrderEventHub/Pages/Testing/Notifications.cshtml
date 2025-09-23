@@ -8,15 +8,15 @@
 {
     <div class="alert alert-warning">
         <h4><i class="fas fa-exclamation-triangle"></i> Testing Features Disabled</h4>
-        <p>Testing features are currently disabled. Enable the 'NotificationTesting' feature flag to access this page.</p>
+        <p>Testing features are currently disabled. Enable the 'Testing' feature flag to access this page.</p>
     </div>
 }
 else
 {
     <div class="row">
         <div class="col-12">
-            <h1><i class="fas fa-flask"></i> Notification Testing</h1>
-            <p class="lead">Test the notification system with various severity levels and scenarios.</p>
+            <h1><i class="fas fa-bell"></i> Notification Testing</h1>
+            <p class="lead">Test the notification system with different severity levels and bulk notifications.</p>
         </div>
     </div>
 
@@ -65,6 +65,7 @@ else
         </div>
     </div>
 
+    <!-- Test Results -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
@@ -73,13 +74,14 @@ else
                 </div>
                 <div class="card-body">
                     <div id="test-results" class="alert alert-info">
-                        Ready to send test notifications. Results will appear here.
+                        Ready to run tests. Results will appear here.
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Instructions -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
@@ -87,6 +89,7 @@ else
                     <h5><i class="fas fa-info-circle"></i> Instructions</h5>
                 </div>
                 <div class="card-body">
+                    <h6>Notification Testing:</h6>
                     <ul>
                         <li><strong>Bell Icon:</strong> Check the bell icon in the navigation bar for notification count and dropdown</li>
                         <li><strong>Sound:</strong> Each severity level has a different sound tone (requires user interaction first)</li>
@@ -108,6 +111,7 @@ else
             resultDiv.innerHTML = `<i class="fas ${isSuccess ? 'fa-check' : 'fa-times'}"></i> ${message}`;
         }
 
+        // Notification Testing Functions
         async function sendTestNotification(severity) {
             try {
                 const response = await fetch('/api/testing/notifications/send', {

@@ -9,13 +9,16 @@ public class ProjectXClientFactory : IProjectXClientFactory
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IProjectXVendorConfigurationService _vendorConfigurationService;
+    private readonly IProjectXTokenCacheService _tokenCacheService;
 
     public ProjectXClientFactory(
         IHttpClientFactory httpClientFactory,
-        IProjectXVendorConfigurationService vendorConfigurationService)
+        IProjectXVendorConfigurationService vendorConfigurationService,
+        IProjectXTokenCacheService tokenCacheService)
     {
         _httpClientFactory = httpClientFactory;
         _vendorConfigurationService = vendorConfigurationService;
+        _tokenCacheService = tokenCacheService;
     }
 
     public IProjectXClient CreateClient(ProjectXVendor vendor)
@@ -42,6 +45,6 @@ public class ProjectXClientFactory : IProjectXClientFactory
             ApiUser = vendorConfig.ApiUser
         });
 
-        return new ProjectXClient(httpClient, options);
+        return new ProjectXClient(httpClient, options, _tokenCacheService);
     }
 }

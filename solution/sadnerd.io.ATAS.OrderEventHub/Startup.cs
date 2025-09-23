@@ -55,6 +55,9 @@ public class Startup
         services.AddSingleton<IProjectXVendorConfigurationService, ProjectXVendorConfigurationService>();
         services.AddSingleton<IProjectXClientFactory, ProjectXClientFactory>();
 
+        // Add ProjectX token cache service (singleton to share tokens across all instances)
+        services.AddSingleton<IProjectXTokenCacheService, ProjectXTokenCacheService>();
+
         services.AddSingleton<ProjectXTradeCopyManagerProvider>(sp =>
         {
             var manager = new ProjectXTradeCopyManagerProvider(sp.CreateScope().ServiceProvider);

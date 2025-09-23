@@ -6,20 +6,23 @@ namespace sadnerd.io.ATAS.ProjectXApiClient;
 public class ProjectXClient : IProjectXClient, IDisposable
 {
     private readonly IOptions<ProjectXClientOptions> _options;
-    // https://restsharp.dev/docs/usage/example/
-    
     private readonly RestClient _client;
     
     public ProjectXClient(
         HttpClient httpClient,
-        IOptions<ProjectXClientOptions> options
+        IOptions<ProjectXClientOptions> options,
+        IProjectXTokenCacheService tokenCache
     )
     {
         _options = options;
         
         _client = new RestClient(httpClient, new RestClientOptions
         {
-            Authenticator = new ProjectXAuthenticator(_options.Value.ApiUrl, _options.Value.ApiKey, _options.Value.ApiUser),
+            Authenticator = new ProjectXAuthenticator(
+                _options.Value.ApiUrl, 
+                _options.Value.ApiKey, 
+                _options.Value.ApiUser, 
+                tokenCache),
         });
     }
 
