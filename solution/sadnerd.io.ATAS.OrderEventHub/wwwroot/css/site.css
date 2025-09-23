@@ -34,7 +34,16 @@ body {
 }
 
 .notification-item:hover {
-    background-color: #f8f9fa;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* For dark theme, use a darker hover background */
+[data-bs-theme="dark"] .notification-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .notification-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.125);
 }
 
 .notification-card {
