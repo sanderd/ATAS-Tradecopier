@@ -1,22 +1,29 @@
 @page "/Testing/Notifications"
 @model sadnerd.io.ATAS.OrderEventHub.Models.Pages.Testing.NotificationsModel
 @{
-    ViewData["Title"] = "Notification Testing";
+    ViewData["Title"] = "Testing";
 }
 
 @if (!Model.IsTestingEnabled)
 {
     <div class="alert alert-warning">
         <h4><i class="fas fa-exclamation-triangle"></i> Testing Features Disabled</h4>
-        <p>Testing features are currently disabled. Enable the 'NotificationTesting' feature flag to access this page.</p>
+        <p>Testing features are currently disabled. Enable the 'Testing' feature flag to access this page.</p>
     </div>
 }
 else
 {
     <div class="row">
         <div class="col-12">
-            <h1><i class="fas fa-flask"></i> Notification Testing</h1>
-            <p class="lead">Test the notification system with various severity levels and scenarios.</p>
+            <h1><i class="fas fa-flask"></i> System Testing</h1>
+            <p class="lead">Test various system components including notifications and token caching.</p>
+        </div>
+    </div>
+
+    <!-- Notification Testing Section -->
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-bell"></i> Notification Testing</h2>
         </div>
     </div>
 
@@ -65,6 +72,80 @@ else
         </div>
     </div>
 
+    <!-- Token Cache Testing Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2><i class="fas fa-key"></i> ProjectX Token Cache Testing</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-database"></i> Cache Status</h5>
+                </div>
+                <div class="card-body">
+                    <p>View current token cache status and cached tokens.</p>
+                    <button type="button" class="btn btn-info w-100 mb-2" onclick="getTokenCacheStatus()">
+                        <i class="fas fa-refresh"></i> Get Cache Status
+                    </button>
+                    <div id="cache-status" class="alert alert-info" style="display: none;">
+                        <!-- Cache status will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-vial"></i> Cache Testing</h5>
+                </div>
+                <div class="card-body">
+                    <p>Test token caching functionality with custom parameters.</p>
+                    <div class="mb-2">
+                        <label for="testApiUrl" class="form-label">API URL:</label>
+                        <input type="text" class="form-control" id="testApiUrl" value="https://api.test.com">
+                    </div>
+                    <div class="mb-2">
+                        <label for="testApiUser" class="form-label">API User:</label>
+                        <input type="text" class="form-control" id="testApiUser" value="testuser">
+                    </div>
+                    <div class="mb-3">
+                        <label for="testExpiration" class="form-label">Expiration (minutes):</label>
+                        <input type="number" class="form-control" id="testExpiration" value="60" min="1" max="1440">
+                    </div>
+                    <button type="button" class="btn btn-success w-100" onclick="testTokenCaching()">
+                        <i class="fas fa-play"></i> Test Token Caching
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-trash"></i> Cache Management</h5>
+                </div>
+                <div class="card-body">
+                    <p>Clear cached tokens for testing purposes.</p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-warning" onclick="clearExpiredTokens()">
+                            <i class="fas fa-clock"></i> Clear Expired Tokens
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="clearSpecificToken()">
+                            <i class="fas fa-times"></i> Clear Specific Token
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Results -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
@@ -73,13 +154,14 @@ else
                 </div>
                 <div class="card-body">
                     <div id="test-results" class="alert alert-info">
-                        Ready to send test notifications. Results will appear here.
+                        Ready to run tests. Results will appear here.
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Instructions -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
@@ -87,12 +169,21 @@ else
                     <h5><i class="fas fa-info-circle"></i> Instructions</h5>
                 </div>
                 <div class="card-body">
+                    <h6>Notification Testing:</h6>
                     <ul>
                         <li><strong>Bell Icon:</strong> Check the bell icon in the navigation bar for notification count and dropdown</li>
                         <li><strong>Sound:</strong> Each severity level has a different sound tone (requires user interaction first)</li>
                         <li><strong>Browser Notifications:</strong> Allow browser notifications when prompted to test desktop notifications</li>
                         <li><strong>Real-time:</strong> Notifications appear instantly via SignalR connection</li>
                         <li><strong>Persistence:</strong> Notifications are kept in memory and survive page refreshes until app restart</li>
+                    </ul>
+
+                    <h6>Token Cache Testing:</h6>
+                    <ul>
+                        <li><strong>Shared Cache:</strong> All ProjectXClient instances share the same token cache per API/ApiUser combination</li>
+                        <li><strong>Automatic Expiration:</strong> Tokens expire automatically and are cleaned up in the background</li>
+                        <li><strong>Concurrency Safe:</strong> Multiple simultaneous requests for the same API/User only result in one token request</li>
+                        <li><strong>Error Handling:</strong> Failed authentication attempts invalidate cached tokens</li>
                     </ul>
                 </div>
             </div>
@@ -108,6 +199,7 @@ else
             resultDiv.innerHTML = `<i class="fas ${isSuccess ? 'fa-check' : 'fa-times'}"></i> ${message}`;
         }
 
+        // Notification Testing Functions
         async function sendTestNotification(severity) {
             try {
                 const response = await fetch('/api/testing/notifications/send', {
@@ -150,6 +242,108 @@ else
                 }
             } catch (error) {
                 showResult(`Error sending bulk notifications: ${error.message}`, false);
+            }
+        }
+
+        // Token Cache Testing Functions
+        async function getTokenCacheStatus() {
+            try {
+                const response = await fetch('/api/testing/token-cache/status');
+                
+                if (response.ok) {
+                    const status = await response.json();
+                    const statusDiv = document.getElementById('cache-status');
+                    statusDiv.innerHTML = `
+                        <h6>Cache Status:</h6>
+                        <p><strong>Cached Tokens:</strong> ${status.cachedTokenCount}</p>
+                        <p><strong>Token Keys:</strong></p>
+                        <ul>
+                            ${status.cachedTokenKeys.map(key => `<li><code>${key}</code></li>`).join('')}
+                        </ul>
+                    `;
+                    statusDiv.style.display = 'block';
+                    showResult('Token cache status retrieved successfully!');
+                } else {
+                    showResult('Failed to get token cache status', false);
+                }
+            } catch (error) {
+                showResult(`Error getting cache status: ${error.message}`, false);
+            }
+        }
+
+        async function testTokenCaching() {
+            const apiUrl = document.getElementById('testApiUrl').value;
+            const apiUser = document.getElementById('testApiUser').value;
+            const expiration = parseInt(document.getElementById('testExpiration').value);
+
+            if (!apiUrl || !apiUser) {
+                showResult('Please provide API URL and API User', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/testing/token-cache/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        apiUrl: apiUrl,
+                        apiUser: apiUser,
+                        expirationMinutes: expiration
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showResult(`Token caching test completed! Token retrieved: ${result.tokenRetrieved}, Cache count: ${result.cachedTokenCount}`);
+                    // Refresh cache status
+                    await getTokenCacheStatus();
+                } else {
+                    showResult('Token caching test failed', false);
+                }
+            } catch (error) {
+                showResult(`Error testing token caching: ${error.message}`, false);
+            }
+        }
+
+        async function clearExpiredTokens() {
+            try {
+                const response = await fetch('/api/testing/token-cache/clear', {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showResult('Expired tokens cleared successfully!');
+                    await getTokenCacheStatus();
+                } else {
+                    showResult('Failed to clear expired tokens', false);
+                }
+            } catch (error) {
+                showResult(`Error clearing expired tokens: ${error.message}`, false);
+            }
+        }
+
+        async function clearSpecificToken() {
+            const apiUrl = document.getElementById('testApiUrl').value;
+            const apiUser = document.getElementById('testApiUser').value;
+
+            if (!apiUrl || !apiUser) {
+                showResult('Please provide API URL and API User to clear specific token', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/testing/token-cache/clear?apiUrl=${encodeURIComponent(apiUrl)}&apiUser=${encodeURIComponent(apiUser)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showResult(`Cleared token for ${apiUrl}|${apiUser}`);
+                    await getTokenCacheStatus();
+                } else {
+                    showResult('Failed to clear specific token', false);
+                }
+            } catch (error) {
+                showResult(`Error clearing specific token: ${error.message}`, false);
             }
         }
     </script>
