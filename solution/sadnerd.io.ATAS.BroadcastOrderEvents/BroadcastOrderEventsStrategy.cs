@@ -15,12 +15,9 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
     public class BroadcastOrderEventsStrategy : ChartStrategy
     {
         private bool _isStarted = false;
-        private bool _isRegistered = false;
         private IOrderEventHubDispatchService _orderEventHubDispatchService;
         private readonly IDictionary<string, decimal> _lastReportedPosition = new Dictionary<string, decimal>();
-        private string _strategyKey = string.Empty;
-        private string _currentAccountId = string.Empty;
-        private string _currentSecurityId = string.Empty;
+        private string _currentRegisteredPair = string.Empty;
 
         // Configuration properties
         private string _serverIpAddress = "127.0.0.1";
@@ -59,8 +56,8 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             if (!ShouldProcessEvents()) return;
             
-            // Try to register strategy on first order if not already registered
-            TryRegisterFromOrder(order);
+            // Update registration for current account/instrument if it changed
+            UpdateRegistrationFromOrder(order);
             
             var mappedMessage = ServiceLocator.OrderToNewOrderEventMapper.Map(order);
             _orderEventHubDispatchService.NewOrder(mappedMessage);
@@ -70,8 +67,8 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             if (!ShouldProcessEvents()) return;
             
-            // Try to register strategy on first order if not already registered
-            TryRegisterFromOrder(order);
+            // Update registration for current account/instrument if it changed
+            UpdateRegistrationFromOrder(order);
             
             var mappedMessage = ServiceLocator.OrderToOrderChangedEventMapper.Map(order);
             _orderEventHubDispatchService.OrderChanged(mappedMessage);
@@ -81,8 +78,8 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             if (!ShouldProcessEvents()) return;
             
-            // Try to register strategy on first position if not already registered
-            TryRegisterFromPosition(position);
+            // Update registration for current account/instrument if it changed
+            UpdateRegistrationFromPosition(position);
             
             bool report = false;
             string positionKey = GetPositionKey(position);
@@ -126,10 +123,11 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             _isStarted = false;
             _lastReportedPosition.Clear();
             
-            if (_isRegistered && !string.IsNullOrEmpty(_strategyKey))
+            // Unregister the current account/instrument pair
+            if (!string.IsNullOrEmpty(_currentRegisteredPair))
             {
-                ServiceLocator.UnregisterStrategy(_strategyKey);
-                _isRegistered = false;
+                ServiceLocator.UnregisterStrategy(_currentRegisteredPair);
+                _currentRegisteredPair = string.Empty;
             }
 
             base.OnStopping();
@@ -140,69 +138,71 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             return _isStarted;
         }
 
-        private void TryRegisterFromOrder(Order order)
+        private void UpdateRegistrationFromOrder(Order order)
         {
-            if (_isRegistered) return;
-
             try
             {
                 var accountId = GetOrderProperty(order, "AccountId", "Account")?.ToString() ?? "";
-                var securityId = GetOrderProperty(order, "ContractId", "SecurityId", "Symbol")?.ToString() ?? "";
+                var instrumentId = GetOrderProperty(order, "ContractId", "SecurityId", "Symbol")?.ToString() ?? "";
                 
-                if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(securityId))
+                if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(instrumentId))
                 {
-                    TryRegisterStrategy(accountId, securityId);
+                    UpdateRegistration(accountId, instrumentId);
                 }
             }
             catch
             {
-                // Fallback registration if we can't get proper IDs
-                if (string.IsNullOrEmpty(_strategyKey))
-                {
-                    _strategyKey = $"strategy_{this.GetHashCode()}_{DateTime.UtcNow.Ticks}";
-                    _isRegistered = ServiceLocator.TryRegisterStrategy(_strategyKey);
-                }
+                // Ignore registration errors for orders
+                System.Diagnostics.Debug.WriteLine("Failed to update registration from order");
             }
         }
 
-        private void TryRegisterFromPosition(Position position)
+        private void UpdateRegistrationFromPosition(Position position)
         {
-            if (_isRegistered) return;
-
             try
             {
                 var accountId = GetPositionProperty(position, "AccountId", "Account")?.ToString() ?? "";
-                var securityId = GetPositionProperty(position, "SecurityId", "ContractId", "Symbol")?.ToString() ?? "";
+                var instrumentId = GetPositionProperty(position, "ContractId", "SecurityId", "Symbol")?.ToString() ?? "";
                 
-                if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(securityId))
+                if (!string.IsNullOrEmpty(accountId) && !string.IsNullOrEmpty(instrumentId))
                 {
-                    TryRegisterStrategy(accountId, securityId);
+                    UpdateRegistration(accountId, instrumentId);
                 }
             }
             catch
             {
-                // Fallback registration if we can't get proper IDs
-                if (string.IsNullOrEmpty(_strategyKey))
-                {
-                    _strategyKey = $"strategy_{this.GetHashCode()}_{DateTime.UtcNow.Ticks}";
-                    _isRegistered = ServiceLocator.TryRegisterStrategy(_strategyKey);
-                }
+                // Ignore registration errors for positions
+                System.Diagnostics.Debug.WriteLine("Failed to update registration from position");
             }
         }
 
-        private void TryRegisterStrategy(string accountId, string securityId)
+        private void UpdateRegistration(string accountId, string instrumentId)
         {
-            if (_isRegistered) return;
-
-            _currentAccountId = accountId;
-            _currentSecurityId = securityId;
-            _strategyKey = $"{accountId}:{securityId}";
+            var newPair = $"{accountId}:{instrumentId}";
             
-            _isRegistered = ServiceLocator.TryRegisterStrategy(_strategyKey);
-            
-            if (!_isRegistered)
+            // Only update if the account/instrument combination has changed
+            if (_currentRegisteredPair != newPair)
             {
-                System.Diagnostics.Debug.WriteLine($"Another strategy is already active for Account {accountId} and Security {securityId}. Only one strategy per account/security combination is allowed.");
+                // Unregister the old pair if it exists
+                if (!string.IsNullOrEmpty(_currentRegisteredPair))
+                {
+                    ServiceLocator.UnregisterStrategy(_currentRegisteredPair);
+                }
+                
+                // Try to register the new pair
+                if (ServiceLocator.TryRegisterStrategy(newPair))
+                {
+                    _currentRegisteredPair = newPair;
+                    System.Diagnostics.Debug.WriteLine($"Strategy switched to Account {accountId} and Instrument {instrumentId}");
+                    
+                    // Clear position history when switching account/instrument
+                    _lastReportedPosition.Clear();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Cannot switch to Account {accountId} and Instrument {instrumentId} - another strategy is already active for this combination");
+                    _currentRegisteredPair = string.Empty;
+                }
             }
         }
 
@@ -210,7 +210,8 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             try
             {
-                return GetPositionProperty(position, "SecurityId", "ContractId", "Symbol")?.ToString() 
+                // Use simple position key since we're only handling one account/instrument at a time
+                return GetPositionProperty(position, "ContractId", "SecurityId", "Symbol")?.ToString() 
                        ?? position.GetHashCode().ToString();
             }
             catch
@@ -223,7 +224,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             try
             {
-                var volumeProp = GetPositionProperty(position, "Volume", "Size", "Quantity");
+                var volumeProp = GetPositionProperty(position, "Size", "Volume", "Quantity");
                 if (volumeProp != null && (volumeProp is decimal || volumeProp is int || volumeProp is double || volumeProp is float))
                 {
                     return Convert.ToDecimal(volumeProp);
