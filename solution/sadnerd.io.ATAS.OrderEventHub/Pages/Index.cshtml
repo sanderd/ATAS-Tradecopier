@@ -1,0 +1,120 @@
+@page
+@model sadnerd.io.ATAS.OrderEventHub.Models.Pages.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i class="fas fa-tachometer-alt me-2"></i>Trade Copy Dashboard
+            </h1>
+            <small class="text-muted">Welcome back, @User.Identity.Name</small>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">ATAS Accounts</h5>
+                        <h3 class="mb-0">--</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a asp-page="/AtasAccount/Index" class="text-white text-decoration-none">
+                        <small>View all <i class="fas fa-arrow-right"></i></small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">ProjectX Accounts</h5>
+                        <h3 class="mb-0">--</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-exchange-alt fa-2x"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a asp-page="/ProjectXAccount/Index" class="text-white text-decoration-none">
+                        <small>View all <i class="fas fa-arrow-right"></i></small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Copy Strategies</h5>
+                        <h3 class="mb-0">--</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-copy fa-2x"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a asp-page="/CopyStrategy/Index" class="text-white text-decoration-none">
+                        <small>View all <i class="fas fa-arrow-right"></i></small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">API Credentials</h5>
+                        <h3 class="mb-0">--</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-key fa-2x"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a asp-page="/ApiCredentials/Index" class="text-white text-decoration-none">
+                        <small>View all <i class="fas fa-arrow-right"></i></small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bell me-2"></i>Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Real-time notifications and activity will appear here.</p>
+                <div id="activity-feed">
+                    <!-- Activity feed will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
