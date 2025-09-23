@@ -116,6 +116,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             _orderEventHubDispatchService.OrderChanged(mappedMessage);
         }
 
+        // NOTE: Potential code smell! Please inspect why positionKey is relevant here.
         protected override void OnPositionChanged(Position position)
         {
             if (!ShouldProcessEvents()) return;
@@ -216,9 +217,11 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
         {
             try
             {
-                // Use simple position key since we're only handling one account/instrument at a time
-                return GetPositionProperty(position, "ContractId", "SecurityId", "Symbol")?.ToString() 
-                       ?? position.GetHashCode().ToString();
+                // Prefer security id; fall back to a hashcode
+                if (!string.IsNullOrEmpty(position.SecurityId))
+                    return position.SecurityId;
+
+                return position.GetHashCode().ToString();
             }
             catch
             {
@@ -228,47 +231,7 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 
         private decimal GetPositionVolume(Position position)
         {
-            try
-            {
-                var volumeProp = GetPositionProperty(position, "Size", "Volume", "Quantity");
-                if (volumeProp != null && (volumeProp is decimal || volumeProp is int || volumeProp is double || volumeProp is float))
-                {
-                    return Convert.ToDecimal(volumeProp);
-                }
-            }
-            catch
-            {
-                // Ignore errors and return 0
-            }
-            return 0;
-        }
-
-        private object? GetOrderProperty(Order order, params string[] propertyNames)
-        {
-            var orderType = order.GetType();
-            foreach (var propName in propertyNames)
-            {
-                var prop = orderType.GetProperty(propName);
-                if (prop != null)
-                {
-                    return prop.GetValue(order);
-                }
-            }
-            return null;
-        }
-
-        private object? GetPositionProperty(Position position, params string[] propertyNames)
-        {
-            var positionType = position.GetType();
-            foreach (var propName in propertyNames)
-            {
-                var prop = positionType.GetProperty(propName);
-                if (prop != null)
-                {
-                    return prop.GetValue(position);
-                }
-            }
-            return null;
+            return position.Volume;
         }
 
         private void ReconfigureConnection()
