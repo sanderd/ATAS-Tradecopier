@@ -28,13 +28,14 @@
                 <h6 class="card-title">Filters</h6>
                 <div class="row">
                     <div class="col-md-3">
-                        <select class="form-select" id="severity-filter">
-                            <option value="">All Severities</option>
+                        <label for="severity-filter" class="form-label">Severity Levels</label>
+                        <select class="form-select" id="severity-filter" multiple size="4">
                             <option value="Info">Info</option>
-                            <option value="Warning">Warning</option>
-                            <option value="Error">Error</option>
+                            <option value="Warning" selected>Warning</option>
+                            <option value="Error" selected>Error</option>
                             <option value="Critical">Critical</option>
                         </select>
+                        <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="time-filter">
@@ -135,6 +136,9 @@
             loadNotifications();
             loadSettings();
             setupRealTimeUpdates();
+            
+            // Set default severity filter from localStorage
+            loadSeverityFilter();
         });
 
         // Load settings from localStorage
@@ -226,15 +230,41 @@
             });
         }
 
+        // Load severity filter from localStorage
+        function loadSeverityFilter() {
+            const savedFilter = localStorage.getItem('notificationPageSeverityFilter');
+            if (savedFilter) {
+                try {
+                    const severities = JSON.parse(savedFilter);
+                    setMultiSelectValues('severity-filter', severities);
+                } catch (e) {
+                    // If parsing fails, use defaults
+                    setMultiSelectValues('severity-filter', ['Warning', 'Error']);
+                }
+            } else {
+                // Use defaults
+                setMultiSelectValues('severity-filter', ['Warning', 'Error']);
+            }
+        }
+
+        // Save severity filter to localStorage
+        function saveSeverityFilter() {
+            const selectedSeverities = getMultiSelectValues('severity-filter');
+            localStorage.setItem('notificationPageSeverityFilter', JSON.stringify(selectedSeverities));
+        }
+
         // Apply filters
         function applyFilters() {
-            const severityFilter = document.getElementById('severity-filter').value;
+            const selectedSeverities = getMultiSelectValues('severity-filter');
             const timeFilter = document.getElementById('time-filter').value;
             const searchFilter = document.getElementById('search-filter').value.toLowerCase();
 
+            // Save the current severity filter
+            saveSeverityFilter();
+
             filteredNotifications = allNotifications.filter(notification => {
                 // Severity filter
-                if (severityFilter && notification.Severity !== severityFilter) {
+                if (selectedSeverities.length > 0 && !selectedSeverities.includes(notification.Severity)) {
                     return false;
                 }
 
@@ -410,6 +440,9 @@
                 applyFilters();
             }
         });
+
+        // Auto-apply filters when severity selection changes
+        document.getElementById('severity-filter').addEventListener('change', applyFilters);
     </script>
 
     <style>
