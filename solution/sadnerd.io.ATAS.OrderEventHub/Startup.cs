@@ -11,6 +11,7 @@ using sadnerd.io.ATAS.OrderEventHub.Infrastructure.FeatureFlags;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications.SignalR;
 using sadnerd.io.ATAS.OrderEventHub.Infrastructure.Notifications.Sinks;
+using sadnerd.io.ATAS.OrderEventHub.Middleware;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.ConnectionManagement;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.CopyManager;
 using sadnerd.io.ATAS.OrderEventHub.ProjectXIntegration.SignalR;
@@ -171,6 +172,9 @@ public class Startup
         // Add authentication and authorization middleware
         app.UseAuthentication();
         app.UseAuthorization();
+
+        // Add first-time setup middleware (after authentication)
+        app.UseFirstTimeSetup();
 
         app.UseEndpoints(endpoints =>
         {

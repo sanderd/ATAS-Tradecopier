@@ -1,0 +1,25 @@
+@using sadnerd.io.ATAS.OrderEventHub.Services
+@inject IAccountService AccountService
+
+@if (User.Identity.IsAuthenticated)
+{
+    var user = await AccountService.GetCurrentUserAsync(User);
+    var displayName = !string.IsNullOrEmpty(user?.FirstName) ? $"{user.FirstName} {user.LastName}" : user?.UserName;
+    
+    <div class="user-info">
+        <small class="text-muted">
+            Welcome back, <strong>@displayName</strong>
+            @if (user?.LastLoginAt.HasValue == true)
+            {
+                <br />
+                <span>Last login: @user.LastLoginAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+            }
+        </small>
+    </div>
+}
+else
+{
+    <div class="user-info">
+        <small class="text-muted">Not logged in</small>
+    </div>
+}
