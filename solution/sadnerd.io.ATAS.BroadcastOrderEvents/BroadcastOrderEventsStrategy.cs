@@ -100,6 +100,19 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             _lastReportedPosition.Clear();
         }
 
+        protected override void OnInitialize()
+        {
+            base.OnInitialize();
+
+            ReconfigureConnection();
+
+            // Subscribe to TradingManager events for portfolio and security changes
+            this.TradingManager.PortfolioSelected += OnPortfolioSelected;
+            this.TradingManager.SecuritySelected += OnSecuritySelected;
+
+            // Register based on current portfolio and security if available
+            RegisterForCurrentAccountInstrument();
+        }
         protected override void OnNewOrder(Order order)
         {
             if (!ShouldProcessEvents()) return;
