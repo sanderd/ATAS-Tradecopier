@@ -10,8 +10,9 @@ That being said, the author is using this software daily for personal needs.
 
 ## Quick Start
 
-- [Installation Guide](installation.md) - Get up and running quickly
-- [Configuration Guide](configuration.md) - Set up your trading environment
+- [Installation Guide](docs/installation.md) - Get up and running quickly
+- [Configuration Guide](docs/configuration.md) - Set up your trading environment
+- [Quick screen recording demonstrating ATAS Strategy setup](https://youtu.be/_MHOYJV1rhU)
 
 ## System Overview
 

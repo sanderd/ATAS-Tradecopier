@@ -40,7 +40,14 @@ The system supports various broker integrations through the Order Event Hub.
 
 2. **Required Settings**
    - API Key
-   - API User (**TODO** Add note on how to find username)
+   - API User
+     **NOTE**
+     To find your API user:
+     1. Log into the ProjectX interface of your vendor.
+     2. Open Developer Tools, and copy the value for `token` from Local Storage (Firefox: F12 -> Storage -> Local Storage). It starts with 'ey'. **This token is PRIVATE, never share this with anyone, except for step 3.**
+     3. Go to [jwt.io](https://www.jwt.io/) and paste the token into 'Encoded Value'
+     4. Your API username is the value for the claim `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name` - see also [the following screenshot](images/jwtio.png)
+     5. Log out of the ProjectX interface to invalidate your token.
 
 3. **Account Configuration**
    - Link your trading accounts
@@ -60,6 +67,8 @@ The system supports various broker integrations through the Order Event Hub.
    - **Atas Contract**: The contract name as known in ATAS (eg. NQZ5)
    - **ProjectX Contract**: The contract name as known in ProjectX (eg. NQZ25)
    - **Contract Multiplier**: Multiplier applied to the copied trades. Fractional or negative values are not supported.
+
+    *Notice the difference in notation between Atas & ProjectX Contract names.*
 
 ### Monitoring and Alerts
 
