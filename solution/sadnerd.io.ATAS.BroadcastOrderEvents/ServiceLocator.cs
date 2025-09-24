@@ -70,6 +70,15 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             return _dispatchServices.GetOrAdd(key, _ => new ResilientOrderEventHubDispatchService(endpoint));
         }
 
+        public static void ClearDispatchServiceQueue(IPEndPoint endpoint)
+        {
+            var key = $"{endpoint.Address}:{endpoint.Port}";
+            if (_dispatchServices.TryGetValue(key, out var service))
+            {
+                service.ClearQueue();
+            }
+        }
+
         public static bool TryRegisterStrategy(string strategyKey, BroadcastOrderEventsStrategy strategy)
         {
             lock (_lock)

@@ -31,8 +31,23 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             get => _serverIpAddress;
             set
             {
-                _serverIpAddress = value;
-                ReconfigureConnection();
+                if (_serverIpAddress != value)
+                {
+                    _serverIpAddress = value;
+                    // Only reconfigure if the value is valid and not empty
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        try
+                        {
+                            ReconfigureConnection();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error reconfiguring connection with IP {value}: {ex.Message}");
+                            // Don't throw - allow the property to be set even if connection fails
+                        }
+                    }
+                }
             }
         }
 
@@ -44,8 +59,23 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             get => _serverPort;
             set
             {
-                _serverPort = value;
-                ReconfigureConnection();
+                if (_serverPort != value)
+                {
+                    _serverPort = value;
+                    // Only reconfigure if we have a valid IP address
+                    if (!string.IsNullOrWhiteSpace(_serverIpAddress))
+                    {
+                        try
+                        {
+                            ReconfigureConnection();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error reconfiguring connection with port {value}: {ex.Message}");
+                            // Don't throw - allow the property to be set even if connection fails
+                        }
+                    }
+                }
             }
         }
 
@@ -109,43 +139,64 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 
         protected override void OnNewOrder(Order order)
         {
-            if (!ShouldProcessEvents()) return;
+            if (!ShouldProcessEvents() || _orderEventHubDispatchService == null) return;
             
-            var mappedMessage = ServiceLocator.OrderToNewOrderEventMapper.Map(order);
-            _orderEventHubDispatchService.NewOrder(mappedMessage);
+            try
+            {
+                var mappedMessage = ServiceLocator.OrderToNewOrderEventMapper.Map(order);
+                _orderEventHubDispatchService.NewOrder(mappedMessage);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error processing NewOrder event: {ex.Message}");
+            }
         }
 
         protected override void OnOrderChanged(Order order)
         {
-            if (!ShouldProcessEvents()) return;
+            if (!ShouldProcessEvents() || _orderEventHubDispatchService == null) return;
             
-            var mappedMessage = ServiceLocator.OrderToOrderChangedEventMapper.Map(order);
-            _orderEventHubDispatchService.OrderChanged(mappedMessage);
+            try
+            {
+                var mappedMessage = ServiceLocator.OrderToOrderChangedEventMapper.Map(order);
+                _orderEventHubDispatchService.OrderChanged(mappedMessage);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error processing OrderChanged event: {ex.Message}");
+            }
         }
 
         // NOTE: Potential code smell! Please inspect why positionKey is relevant here.
         protected override void OnPositionChanged(Position position)
         {
-            if (!ShouldProcessEvents()) return;
+            if (!ShouldProcessEvents() || _orderEventHubDispatchService == null) return;
             
-            bool report = false;
-            string positionKey = GetPositionKey(position);
-            decimal positionVolume = GetPositionVolume(position);
-            
-            if (!_lastReportedPosition.ContainsKey(positionKey))
+            try
             {
-                _lastReportedPosition.Add(positionKey, positionVolume);
-                report = true;
-            } else if (_lastReportedPosition[positionKey] != positionVolume)
-            {
-                _lastReportedPosition[positionKey] = positionVolume;
-                report = true;
-            }
+                bool report = false;
+                string positionKey = GetPositionKey(position);
+                decimal positionVolume = GetPositionVolume(position);
+                
+                if (!_lastReportedPosition.ContainsKey(positionKey))
+                {
+                    _lastReportedPosition.Add(positionKey, positionVolume);
+                    report = true;
+                } else if (_lastReportedPosition[positionKey] != positionVolume)
+                {
+                    _lastReportedPosition[positionKey] = positionVolume;
+                    report = true;
+                }
 
-            if (report)
+                if (report)
+                {
+                    var mappedMessage = ServiceLocator.PositionToPositionChangedEventMapper.Map(position);
+                    _orderEventHubDispatchService.PositionChanged(mappedMessage);
+                }
+            }
+            catch (Exception ex)
             {
-                var mappedMessage = ServiceLocator.PositionToPositionChangedEventMapper.Map(position);
-                _orderEventHubDispatchService.PositionChanged(mappedMessage);
+                System.Diagnostics.Debug.WriteLine($"Error processing PositionChanged event: {ex.Message}");
             }
         }
 
@@ -171,6 +222,23 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             _isStarted = false;
             _isActiveForCurrentPair = false;
             _lastReportedPosition.Clear();
+            
+            // Clear the dispatch service queue to prevent messages from being processed after stopping
+            try
+            {
+                if (_orderEventHubDispatchService != null && 
+                    !string.IsNullOrWhiteSpace(_serverIpAddress) && 
+                    IPAddress.TryParse(_serverIpAddress, out var ipAddress))
+                {
+                    var endpoint = new IPEndPoint(ipAddress, _serverPort);
+                    ServiceLocator.ClearDispatchServiceQueue(endpoint);
+                    System.Diagnostics.Debug.WriteLine($"Cleared dispatch service queue for {endpoint}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error clearing dispatch service queue: {ex.Message}");
+            }
             
             // Unregister the current account/instrument pair
             if (!string.IsNullOrEmpty(_currentRegisteredPair))
@@ -243,8 +311,37 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
 
         private void ReconfigureConnection()
         {
-            var endpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), _serverPort);
-            _orderEventHubDispatchService = ServiceLocator.GetDispatchService(endpoint);
+            try
+            {
+                // Validate IP address before trying to parse it
+                if (string.IsNullOrWhiteSpace(_serverIpAddress))
+                {
+                    System.Diagnostics.Debug.WriteLine("Cannot configure connection: IP address is empty");
+                    return;
+                }
+
+                if (_serverPort <= 0 || _serverPort > 65535)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Cannot configure connection: Invalid port {_serverPort}");
+                    return;
+                }
+
+                // Test IP address parsing before creating endpoint
+                if (!IPAddress.TryParse(_serverIpAddress, out var ipAddress))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Cannot configure connection: Invalid IP address '{_serverIpAddress}'");
+                    return;
+                }
+
+                var endpoint = new IPEndPoint(ipAddress, _serverPort);
+                _orderEventHubDispatchService = ServiceLocator.GetDispatchService(endpoint);
+                System.Diagnostics.Debug.WriteLine($"Successfully configured connection to {endpoint}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in ReconfigureConnection: {ex.Message}");
+                // Don't rethrow - allow strategy to continue working
+            }
         }
     }
 }
