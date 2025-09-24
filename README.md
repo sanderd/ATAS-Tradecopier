@@ -38,6 +38,12 @@ The ATAS Trade Copy System consists of two main components:
 
 ## Usage notes
 1. Currently tested vendors: **Topstep** and **Lucid Trading**. All currently listed vendors on the ProjectX website were added.
+2. The copying happens in order-mode, and therefor, discrepancies can occur between source and destination. Currently, **no** monitoring of these discrepancies is supported.
+
+## Wishlist / missing features
+1. Implement OCO (One-Cancels-Other) orders with ProjectX-native OCO orders. Current edge-cases are possible where eg. TP of ATAS was hit, SL order got removed. If that TP wasn't hit on ProjectX yet, the SL still gets removed.
+2. Re-sync functionality that recovers the current position & orders when sync was lost.
+3. Monitor discrepancies between source and destination.
 
 ## Development
 
