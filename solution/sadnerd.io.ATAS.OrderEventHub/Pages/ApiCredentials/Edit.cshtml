@@ -43,6 +43,10 @@
             <div class="form-group mb-3">
                 <label asp-for="ApiCredential.ApiUser" class="form-label">API User</label>
                 <input asp-for="ApiCredential.ApiUser" class="form-control" />
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    See the <a href="https://github.com/sanderd/ATAS-Tradecopier/blob/main/docs/configuration.md#projectxtopstepx-integration" target="_blank">documentation</a> for information on finding your API User.
+                </small>
                 <span asp-validation-for="ApiCredential.ApiUser" class="text-danger"></span>
             </div>
 
