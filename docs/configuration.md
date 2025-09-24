@@ -68,6 +68,8 @@ The system supports various broker integrations through the Order Event Hub.
    - **ProjectX Contract**: The contract name as known in ProjectX (eg. NQZ25)
    - **Contract Multiplier**: Multiplier applied to the copied trades. Fractional or negative values are not supported.
 
+    *Notice the difference in notation between Atas & ProjectX Contract names.*
+
 ### Monitoring and Alerts
 
 1. **Notification Setup**
