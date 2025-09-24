@@ -36,6 +36,9 @@ The ATAS Trade Copy System consists of two main components:
 2. Configure your trading setup using the [Configuration Guide](docs/configuration.md)
 3. Start trading and monitor through the web interface
 
+## Usage notes
+1. Currently tested vendors: **Topstep** and **Lucid Trading**. All currently listed vendors on the ProjectX website were added.
+
 ## Development
 
 This documentation covers user installation and configuration. For development documentation, see the source code and inline comments.
