@@ -175,7 +175,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
                 _state = ManagerState.Error;
                 await PublishErrorNotificationAsync(
                     "Order Cancellation Failed",
-                    $"Cannot cancel order '{atasOrderId}' - corresponding ProjectX order ID not found in order map",
+                    $"Copy Trading for account {_projectXAccount} paused.\r\nCannot cancel order '{atasOrderId}' - corresponding ProjectX order ID not found in order map",
                     NotificationSeverity.Critical,
                     new Dictionary<string, object> 
                     { 
@@ -204,7 +204,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
             _state = ManagerState.Error;
             await PublishErrorNotificationAsync(
                 "Order Cancellation Error",
-                $"Failed to cancel order '{atasOrderId}': {ex.Message}",
+                $"Copy Trading for account {_projectXAccount} paused.\r\nFailed to cancel order '{atasOrderId}': {ex.Message}",
                 NotificationSeverity.Error,
                 new Dictionary<string, object> 
                 { 
@@ -269,7 +269,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
             _state = ManagerState.Error;
             await PublishErrorNotificationAsync(
                 "Limit Order Creation Error",
-                $"Failed to create limit order: {ex.Message}",
+                $"Copy Trading for account {_projectXAccount} paused.\r\nFailed to create limit order: {ex.Message}",
                 NotificationSeverity.Error,
                 new Dictionary<string, object> 
                 { 
@@ -315,7 +315,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
             _state = ManagerState.Error;
             await PublishErrorNotificationAsync(
                 "Market Order Creation Error",
-                $"Failed to create market order: {ex.Message}",
+                $"Copy Trading for account {_projectXAccount} paused.\r\nFailed to create market order: {ex.Message}",
                 NotificationSeverity.Error,
                 new Dictionary<string, object> 
                 { 
@@ -365,7 +365,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
             _state = ManagerState.Error;
             await PublishErrorNotificationAsync(
                 "Stop Order Creation Error",
-                $"Failed to create stop order: {ex.Message}",
+                $"Copy Trading for account {_projectXAccount} paused.\r\nFailed to create stop order: {ex.Message}",
                 NotificationSeverity.Error,
                 new Dictionary<string, object> 
                 { 
@@ -396,7 +396,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
                 _state = ManagerState.Error;
                 await PublishErrorNotificationAsync(
                     "Stop Loss Setup Failed",
-                    $"Cannot set stop loss - no open position found for contract '{contract}'",
+                    $"Copy Trading for account {_projectXAccount} paused.\r\nCannot set stop loss - no open position found for contract '{contract}'",
                     NotificationSeverity.Critical,
                     new Dictionary<string, object> 
                     { 
@@ -429,7 +429,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
             _state = ManagerState.Error;
             await PublishErrorNotificationAsync(
                 "Stop Loss Setup Error",
-                $"Failed to set stop loss: {ex.Message}",
+                $"Copy Trading for account {_projectXAccount} paused.\r\nFailed to set stop loss: {ex.Message}",
                 NotificationSeverity.Error,
                 new Dictionary<string, object> 
                 { 
@@ -458,7 +458,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
                 _state = ManagerState.Error;
                 await PublishErrorNotificationAsync(
                     "Take Profit Setup Failed",
-                    $"Cannot set take profit - no open position found for contract '{contract}'",
+                    $"Copy Trading for account {_projectXAccount} paused.\r\nCannot set take profit - no open position found for contract '{contract}'",
                     NotificationSeverity.Critical,
                     new Dictionary<string, object> 
                     { 
@@ -491,7 +491,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
             _state = ManagerState.Error;
             await PublishErrorNotificationAsync(
                 "Take Profit Setup Error",
-                $"Failed to set take profit: {ex.Message}",
+                $"Copy Trading for account {_projectXAccount} paused.\r\nFailed to set take profit: {ex.Message}",
                 NotificationSeverity.Error,
                 new Dictionary<string, object> 
                 { 
@@ -544,7 +544,7 @@ public class ProjectXTradeCopyManager : IDestinationManager
             _state = ManagerState.Error;
             await PublishErrorNotificationAsync(
                 "Position Flatten Error",
-                $"Failed to flatten position: {ex.Message}",
+                $"Copy Trading for account {_projectXAccount} paused.\r\nFailed to flatten position: {ex.Message}",
                 NotificationSeverity.Error,
                 new Dictionary<string, object> 
                 { 
