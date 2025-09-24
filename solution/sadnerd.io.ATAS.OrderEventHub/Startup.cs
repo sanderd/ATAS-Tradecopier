@@ -122,14 +122,6 @@ public class Startup
         // NOTE: No longer in use
         services.AddSingleton<TopstepBrowserConnectionManager>();
 
-        // Legacy configuration for backward compatibility - now handled by vendor service
-        services.Configure<ProjectXClientOptions>(options =>
-        {
-            options.ApiKey = "6p9C6d/G5QMR7UZ/Bfsf2TjzKLLvJQtPqmTt/sVRqZM=";
-            options.ApiUrl = "https://api.topstepx.com";
-            options.UserApiUrl = "https://userapi.topstepx.com";
-            options.ApiUser = "sanderd";
-        });
         services.AddHttpClient<IProjectXClient, ProjectXClient>();
 
         services.AddControllersWithViews();
