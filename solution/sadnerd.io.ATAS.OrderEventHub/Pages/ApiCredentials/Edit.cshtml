@@ -29,13 +29,24 @@
 
             <div class="form-group mb-3">
                 <label asp-for="ApiCredential.ApiKey" class="form-label">API Key</label>
-                <input asp-for="ApiCredential.ApiKey" class="form-control" type="text" />
+                <!-- Hidden field to preserve the value for form submission -->
+                <input type="hidden" asp-for="ApiCredential.ApiKey" id="apiKeyHidden" />
+                <div class="input-group">
+                    <input name="ApiCredential.ApiKey" class="form-control" type="password" id="apiKeyInput" style="font-family: monospace;" />
+                    <button type="button" class="btn btn-outline-secondary" id="toggleApiKey">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
+                </div>
                 <span asp-validation-for="ApiCredential.ApiKey" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="ApiCredential.ApiUser" class="form-label">API User</label>
                 <input asp-for="ApiCredential.ApiUser" class="form-control" />
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    See the <a href="https://github.com/sanderd/ATAS-Tradecopier/blob/main/docs/configuration.md#projectxtopstepx-integration" target="_blank">documentation</a> for information on finding your API User.
+                </small>
                 <span asp-validation-for="ApiCredential.ApiUser" class="text-danger"></span>
             </div>
 
@@ -57,4 +68,37 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const apiKeyHidden = document.getElementById('apiKeyHidden');
+            const toggleButton = document.getElementById('toggleApiKey');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            // Get the API key value from the hidden field and populate the password field
+            const apiKeyValue = apiKeyHidden.value;
+            apiKeyInput.value = apiKeyValue;
+            
+            let isHidden = true;
+            
+            toggleButton.addEventListener('click', function() {
+                if (isHidden) {
+                    // Show the API key - change to text field
+                    apiKeyInput.type = 'text';
+                    toggleIcon.className = 'fas fa-eye-slash';
+                    isHidden = false;
+                } else {
+                    // Hide the API key - change back to password field
+                    apiKeyInput.type = 'password';
+                    toggleIcon.className = 'fas fa-eye';
+                    isHidden = true;
+                }
+            });
+            
+            // Keep the hidden field in sync when the user changes the value
+            apiKeyInput.addEventListener('input', function() {
+                apiKeyHidden.value = apiKeyInput.value;
+            });
+        });
+    </script>
 }
