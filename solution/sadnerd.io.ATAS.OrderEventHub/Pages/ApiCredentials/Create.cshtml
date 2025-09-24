@@ -27,7 +27,12 @@
 
             <div class="form-group mb-3">
                 <label asp-for="ApiCredential.ApiKey" class="form-label">API Key</label>
-                <input asp-for="ApiCredential.ApiKey" class="form-control" type="text" />
+                <div class="input-group">
+                    <input asp-for="ApiCredential.ApiKey" class="form-control" type="password" id="apiKeyInput" />
+                    <button type="button" class="btn btn-outline-secondary" id="toggleApiKey">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
+                </div>
                 <span asp-validation-for="ApiCredential.ApiKey" class="text-danger"></span>
             </div>
 
@@ -55,4 +60,18 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('toggleApiKey').addEventListener('click', function() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                apiKeyInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        });
+    </script>
 }
