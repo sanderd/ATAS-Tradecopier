@@ -77,10 +77,10 @@ class NotificationManager {
 
     async loadSounds() {
         const sounds = {
-            info: this.generateTone(800, 0.2, 0.05),
-            warning: this.generateTone(600, 0.4, 0.1),
-            error: this.generateTone(400, 0.6, 0.15),
-            critical: this.generateTone(300, 0.8, 0.2)
+            info: this.generateTone(300, 0.4, 0.8),
+            warning: this.generateTone(400, 0.4, 0.8),
+            error: this.generateTone(600, 0.6, 0.8),
+            critical: this.generateTone(1000, 0.8, 0.8)
         };
 
         for (const [name, buffer] of Object.entries(sounds)) {
