@@ -1,4 +1,3 @@
-using ATAS.DataFeedsCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using OFT.Attributes;
@@ -6,6 +5,12 @@ using System.Net;
 using ATAS.Strategies.Chart;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.Services;
 using sadnerd.io.ATAS.BroadcastOrderEvents.Mappers;
+
+// Import specific types needed from ATAS.DataFeedsCore
+using Order = ATAS.DataFeedsCore.Order;
+using Position = ATAS.DataFeedsCore.Position;
+using Portfolio = ATAS.DataFeedsCore.Portfolio;
+using Security = ATAS.DataFeedsCore.Security;
 
 namespace sadnerd.io.ATAS.BroadcastOrderEvents
 {

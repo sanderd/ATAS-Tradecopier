@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ATAS.Strategies</AssemblyName>
+    <RootNamespace>ATAS.Strategies</RootNamespace>
+    
+    <!-- Mark as reference assembly and exclude from publish -->
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <ExcludeAssets>runtime</ExcludeAssets>
+    <PrivateAssets>all</PrivateAssets>
+    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ATAS.DataFeedsCore\ATAS.DataFeedsCore.csproj">
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
