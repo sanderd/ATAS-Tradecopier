@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
+    
+    <!-- Define when ATAS assemblies are available -->
+    <DefineConstants Condition="Exists('C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll')">$(DefineConstants);ATAS_AVAILABLE</DefineConstants>
+    <DefineConstants Condition="'$(CI)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -19,7 +23,8 @@
 	  <ProjectReference Include="..\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<!-- ATAS assemblies - only when available locally (full ATAS installation) -->
+	<ItemGroup Condition="$(DefineConstants.Contains('ATAS_AVAILABLE')) AND !$(DefineConstants.Contains('CI_BUILD'))">
 		<Reference Include="ATAS.DataFeedsCore">
 		  <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath>
 		</Reference>
@@ -42,4 +47,45 @@
 			<HintPath>C:\Program Files (x86)\ATAS Platform\Utils.Common.dll</HintPath>
 		</Reference>
 	</ItemGroup>
+	
+	<!-- Reference assemblies for CI builds - compile-time only, no runtime deployment -->
+	<ItemGroup Condition="$(DefineConstants.Contains('CI_BUILD'))">
+	  <ProjectReference Include="..\ReferenceAssemblies\ATAS.DataFeedsCore\ATAS.DataFeedsCore.csproj">
+	    <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	    <IncludeAssets>compile</IncludeAssets>
+	    <ExcludeAssets>runtime;contentFiles;analyzers;build;native</ExcludeAssets>
+	    <Private>false</Private>
+	  </ProjectReference>
+	  <ProjectReference Include="..\ReferenceAssemblies\ATAS.Strategies\ATAS.Strategies.csproj">
+	    <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	    <IncludeAssets>compile</IncludeAssets>
+	    <ExcludeAssets>runtime;contentFiles;analyzers;build;native</ExcludeAssets>
+	    <Private>false</Private>
+	  </ProjectReference>
+	  <ProjectReference Include="..\ReferenceAssemblies\OFT.Attributes\OFT.Attributes.csproj">
+	    <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	    <IncludeAssets>compile</IncludeAssets>
+	    <ExcludeAssets>runtime;contentFiles;analyzers;build;native</ExcludeAssets>
+	    <Private>false</Private>
+	  </ProjectReference>
+	</ItemGroup>
+	
+	<!-- Explicitly exclude reference assemblies from publish output in CI builds -->
+	<ItemGroup Condition="$(DefineConstants.Contains('CI_BUILD'))">
+	  <Content Remove="$(OutputPath)ATAS.DataFeedsCore.dll" />
+	  <Content Remove="$(OutputPath)ATAS.Strategies.dll" />
+	  <Content Remove="$(OutputPath)OFT.Attributes.dll" />
+	  <None Remove="$(OutputPath)ATAS.DataFeedsCore.dll" />
+	  <None Remove="$(OutputPath)ATAS.Strategies.dll" />
+	  <None Remove="$(OutputPath)OFT.Attributes.dll" />
+	</ItemGroup>
+  
+  <!-- Custom target to exclude System.* assemblies from publish -->
+  <Target Name="ExcludeSystemAssemblies" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="$([System.String]::new('%(ResolvedFileToPublish.Filename)').StartsWith('System.IO.Pipelines'))" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="$([System.String]::new('%(ResolvedFileToPublish.Filename)').StartsWith('System.Text.Json'))" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="$([System.String]::new('%(ResolvedFileToPublish.Filename)').StartsWith('System.Text.Encodings.Web'))" />
+    </ItemGroup>
+  </Target>
 </Project>

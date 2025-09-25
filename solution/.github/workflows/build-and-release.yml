@@ -1,0 +1,169 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_PATH: './solution'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Build all projects including BroadcastOrderEvents
+      run: dotnet build --configuration Release --no-restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal
+      working-directory: ${{ env.SOLUTION_PATH }}
+      continue-on-error: true
+      env:
+        CI: true
+    
+    - name: Publish BroadcastOrderEvents
+      run: |
+        dotnet publish "sadnerd.io.ATAS.BroadcastOrderEvents/sadnerd.io.ATAS.BroadcastOrderEvents.csproj" `
+          --configuration Release `
+          --output "../publish/BroadcastOrderEvents" `
+          --no-restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Publish OrderEventHub
+      run: |
+        dotnet publish "sadnerd.io.ATAS.OrderEventHub/sadnerd.io.ATAS.OrderEventHub.csproj" `
+          --configuration Release `
+          --output "../publish/OrderEventHub" `
+          --no-restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Create BroadcastOrderEvents artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BroadcastOrderEvents-${{ github.sha }}
+        path: publish/BroadcastOrderEvents/
+        retention-days: 30
+    
+    - name: Create OrderEventHub artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: OrderEventHub-${{ github.sha }}
+        path: publish/OrderEventHub/
+        retention-days: 30
+    
+    - name: Create combined release artifact (on release)
+      if: github.event_name == 'release'
+      run: |
+        # Create a combined release package
+        $releaseDir = "release-package"
+        New-Item -ItemType Directory -Force -Path $releaseDir
+        
+        # Copy BroadcastOrderEvents
+        $broadcastDir = Join-Path $releaseDir "BroadcastOrderEvents"
+        Copy-Item -Recurse "publish/BroadcastOrderEvents" $broadcastDir
+        
+        # Copy OrderEventHub  
+        $hubDir = Join-Path $releaseDir "OrderEventHub"
+        Copy-Item -Recurse "publish/OrderEventHub" $hubDir
+        
+        # Create a simple deployment script
+        @"
+        @echo off
+        echo Deploying ATAS Trade Copy System
+        echo.
+        
+        echo Copying BroadcastOrderEvents to ATAS Strategies folder...
+        set ATAS_STRATEGIES_DIR=%APPDATA%\ATAS\Strategies
+        
+        copy /Y "BroadcastOrderEvents\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.dll" "%ATAS_STRATEGIES_DIR%\"
+        copy /Y "BroadcastOrderEvents\sadnerd.io.ATAS.BroadcastOrderEvents.dll" "%ATAS_STRATEGIES_DIR%\"
+        copy /Y "BroadcastOrderEvents\ServiceWire.dll" "%ATAS_STRATEGIES_DIR%\"
+        
+        echo.
+        echo Deployment completed!
+        echo.
+        echo To run OrderEventHub, execute: OrderEventHub\sadnerd.io.ATAS.OrderEventHub.exe
+        echo.
+        pause
+        "@ | Out-File -FilePath "$releaseDir/deploy.bat" -Encoding ASCII
+        
+        # Create README
+        @"
+        # ATAS Trade Copy System Release
+        
+        This release contains two main components:
+        
+        ## BroadcastOrderEvents
+        ATAS strategy that broadcasts order and position events.
+        Built using reference assemblies for CI compatibility.
+        
+        **Important**: While this component builds in CI, it still requires the actual ATAS Platform 
+        assemblies to run properly. The built DLLs should work on systems with ATAS installed.
+        
+        ## OrderEventHub
+        Web application that receives and processes the broadcasted events.
+        Run `sadnerd.io.ATAS.OrderEventHub.exe` from the OrderEventHub folder to start the application.
+        
+        ## Deployment Instructions
+        
+        1. Run `deploy.bat` to copy the BroadcastOrderEvents files to ATAS
+        2. Start ATAS and add the "Broadcast Order Events" strategy to your chart
+        3. Run `OrderEventHub/sadnerd.io.ATAS.OrderEventHub.exe`
+        4. Open your browser to http://localhost:5000 to configure the system
+        "@ | Out-File -FilePath "$releaseDir/README.md" -Encoding UTF8
+        
+        # Compress the release package
+        Compress-Archive -Path "$releaseDir/*" -DestinationPath "atas-tradecopy-${{ github.event.release.tag_name }}.zip"
+      
+    - name: Upload release artifact
+      if: github.event_name == 'release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: atas-tradecopy-${{ github.event.release.tag_name }}
+        path: atas-tradecopy-${{ github.event.release.tag_name }}.zip
+        retention-days: 90
+        
+    - name: Attach release asset
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: atas-tradecopy-${{ github.event.release.tag_name }}.zip
+        asset_name: atas-tradecopy-${{ github.event.release.tag_name }}.zip
+        asset_content_type: application/zip

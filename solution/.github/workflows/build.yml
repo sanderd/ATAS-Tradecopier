@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches-ignore: [ main ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_PATH: './solution'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+    
+    - name: Build solution
+      run: dotnet build --configuration Release --no-restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal --logger trx
+      working-directory: ${{ env.SOLUTION_PATH }}
+      continue-on-error: true
+    
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: .NET Tests
+        path: '**/*.trx'
+        reporter: dotnet-trx
+        fail-on-error: false
