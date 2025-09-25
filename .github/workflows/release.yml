@@ -96,18 +96,9 @@ jobs:
         )
         
         echo Copying strategy files...
-        copy /Y "BroadcastOrderEvents\CommandLine.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\log4net.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\Macross.Json.Extensions.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\Newtonsoft.Json.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\Pipelines.Sockets.Unofficial.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\protobuf-net.Core.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\protobuf-net.dll" "%ATAS_STRATEGIES_DIR%\" > nul
         copy /Y "BroadcastOrderEvents\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.dll" "%ATAS_STRATEGIES_DIR%\" > nul
         copy /Y "BroadcastOrderEvents\sadnerd.io.ATAS.BroadcastOrderEvents.dll" "%ATAS_STRATEGIES_DIR%\" > nul
         copy /Y "BroadcastOrderEvents\ServiceWire.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\SkiaSharp.dll" "%ATAS_STRATEGIES_DIR%\" > nul
-        copy /Y "BroadcastOrderEvents\websocket-sharp.dll" "%ATAS_STRATEGIES_DIR%\" > nul
         
         if %errorlevel% neq 0 (
             echo Error occurred during file copying.
