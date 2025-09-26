@@ -1,0 +1,382 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag name (e.g., v1.0.0)'
+        required: true
+        type: string
+      draft:
+        description: 'Create as draft release'
+        required: false
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_PATH: './solution'
+
+jobs:
+  create-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Determine release tag
+      id: tag
+      run: |
+        if ("${{ github.event_name }}" -eq "push") {
+          $tag = "${{ github.ref_name }}"
+          echo "tag_name=$tag" >> $env:GITHUB_OUTPUT
+        } else {
+          $tag = "${{ github.event.inputs.tag_name }}"
+          echo "tag_name=$tag" >> $env:GITHUB_OUTPUT
+        }
+        echo "Release tag: $tag"
+    
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Build all projects
+      run: dotnet build --configuration Release --no-restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity minimal --logger trx
+      working-directory: ${{ env.SOLUTION_PATH }}
+      continue-on-error: true
+      env:
+        CI: true
+    
+    - name: Publish BroadcastOrderEvents
+      run: |
+        dotnet publish "sadnerd.io.ATAS.BroadcastOrderEvents/sadnerd.io.ATAS.BroadcastOrderEvents.csproj" `
+          --configuration Release `
+          --output "../publish/BroadcastOrderEvents" `
+          --no-restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Publish OrderEventHub
+      run: |
+        dotnet publish "sadnerd.io.ATAS.OrderEventHub/sadnerd.io.ATAS.OrderEventHub.csproj" `
+          --configuration Release `
+          --output "../publish/OrderEventHub" `
+          --no-restore
+      working-directory: ${{ env.SOLUTION_PATH }}
+      env:
+        CI: true
+    
+    - name: Create release package
+      id: package
+      run: |
+        $tagName = "${{ steps.tag.outputs.tag_name }}"
+        $releaseDir = "release-package"
+        $packageName = "atas-tradecopy-$tagName"
+        
+        # Create release directory structure
+        New-Item -ItemType Directory -Force -Path $releaseDir
+        
+        # Copy BroadcastOrderEvents
+        $broadcastDir = Join-Path $releaseDir "BroadcastOrderEvents"
+        Copy-Item -Recurse "publish/BroadcastOrderEvents" $broadcastDir
+        
+        # Copy OrderEventHub  
+        $hubDir = Join-Path $releaseDir "OrderEventHub"
+        Copy-Item -Recurse "publish/OrderEventHub" $hubDir
+        
+        # Create deployment script
+        @"
+        @echo off
+        echo ========================================
+        echo  ATAS Trade Copy System $tagName
+        echo ========================================
+        echo.
+        
+        echo Deploying BroadcastOrderEvents to ATAS...
+        set "ATAS_STRATEGIES_DIR=%APPDATA%\ATAS\Strategies"
+        
+        if not exist "%ATAS_STRATEGIES_DIR%" (
+            echo Error: ATAS Strategies directory not found at %ATAS_STRATEGIES_DIR%
+            echo Please ensure ATAS is installed and has been run at least once.
+            echo.
+            pause
+            exit /b 1
+        )
+        
+        echo Copying strategy files...
+        copy /Y "BroadcastOrderEvents\sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.dll" "%ATAS_STRATEGIES_DIR%\" > nul
+        copy /Y "BroadcastOrderEvents\sadnerd.io.ATAS.BroadcastOrderEvents.dll" "%ATAS_STRATEGIES_DIR%\" > nul  
+        copy /Y "BroadcastOrderEvents\ServiceWire.dll" "%ATAS_STRATEGIES_DIR%\" > nul
+        
+        if %errorlevel% neq 0 (
+            echo Error occurred during file copying.
+            pause
+            exit /b 1
+        )
+        
+        echo.
+        echo ========================================
+        echo  Deployment completed successfully!
+        echo ========================================
+        echo.
+        echo Next steps:
+        echo 1. Start ATAS Platform
+        echo 2. Add 'Broadcast Order Events' strategy to your chart
+        echo 3. Run OrderEventHub: double-click 'start-ordereventhub.bat'
+        echo 4. Open http://localhost:5000 in your browser to configure
+        echo.
+        pause
+        "@ | Out-File -FilePath "$releaseDir/deploy.bat" -Encoding ASCII
+        
+        # Create start script for OrderEventHub
+        @"
+        @echo off
+        echo ========================================
+        echo  Starting OrderEventHub $tagName
+        echo ========================================
+        echo.
+        echo The web interface will be available at:
+        echo   http://localhost:5000
+        echo.
+        echo Press Ctrl+C to stop the application
+        echo.
+        cd /d "%~dp0OrderEventHub"
+        start "" "http://localhost:5000"
+        sadnerd.io.ATAS.OrderEventHub.exe
+        pause
+        "@ | Out-File -FilePath "$releaseDir/start-ordereventhub.bat" -Encoding ASCII
+        
+        # Create comprehensive README
+        @"
+        # ATAS Trade Copy System $tagName
+        
+        ## Overview
+        
+        The ATAS Trade Copy System enables automatic copying of trades from ATAS platform to other trading platforms like TopstepX, Tradovate, and more.
+        
+        ## System Components
+        
+        ### ?? BroadcastOrderEvents (ATAS Strategy)
+        - **Purpose**: Captures order and position events from ATAS
+        - **Location**: `BroadcastOrderEvents/` folder
+        - **Deployment**: Must be installed to ATAS Strategies directory
+        - **Requirements**: ATAS Platform installation
+        
+        ### ?? OrderEventHub (Web Application)
+        - **Purpose**: Processes events and manages trade copying
+        - **Location**: `OrderEventHub/` folder
+        - **Interface**: Web-based configuration at http://localhost:5000
+        - **Requirements**: .NET 8.0 Runtime (included with ATAS)
+        
+        ## ?? Quick Start Guide
+        
+        ### Step 1: Deploy ATAS Strategy
+        1. **Automated**: Run `deploy.bat` (requires ATAS installed)
+        2. **Manual**: Copy files from `BroadcastOrderEvents/` to `%APPDATA%\ATAS\Strategies`
+        
+        ### Step 2: Start OrderEventHub
+        - **Easy**: Double-click `start-ordereventhub.bat`
+        - **Manual**: Run `OrderEventHub/sadnerd.io.ATAS.OrderEventHub.exe`
+        
+        ### Step 3: Configure ATAS
+        1. Open ATAS Platform
+        2. Add "Broadcast Order Events" strategy to your trading chart
+        3. Configure connection settings (default: IP 127.0.0.1, Port 35144)
+        
+        ### Step 4: Configure Trade Copying
+        1. Open http://localhost:5000 in your browser
+        2. Set up your target trading accounts (TopstepX, etc.)
+        3. Create copy strategies linking ATAS accounts to target accounts
+        4. Start trading - copies will happen automatically!
+        
+        ## ?? System Requirements
+        
+        - **OS**: Windows 10/11
+        - **Runtime**: .NET 8.0 (usually included with ATAS)
+        - **ATAS**: ATAS Platform (for BroadcastOrderEvents)
+        - **Browser**: Any modern web browser (for configuration)
+        - **Network**: Ports 5000 (web interface) and 35144 (internal communication)
+        
+        ## ?? Package Contents
+        
+        ```
+        atas-tradecopy-$tagName/
+        ??? deploy.bat                    # Automated ATAS deployment
+        ??? start-ordereventhub.bat      # OrderEventHub launcher
+        ??? README.md                    # This documentation
+        ??? BroadcastOrderEvents/        # ATAS strategy files
+        ?   ??? sadnerd.io.ATAS.BroadcastOrderEvents.dll
+        ?   ??? sadnerd.io.ATAS.BroadcastOrderEvents.Contracts.dll
+        ?   ??? ServiceWire.dll
+        ??? OrderEventHub/               # Web application
+            ??? sadnerd.io.ATAS.OrderEventHub.exe
+            ??? wwwroot/                 # Web interface assets
+            ??? [various .dll files]
+        ```
+        
+        ## ??? Troubleshooting
+        
+        ### Common Issues
+        - **"ATAS Strategies directory not found"**: Install and run ATAS at least once
+        - **"Port already in use"**: Close other applications using ports 5000 or 35144
+        - **Strategy not loading in ATAS**: Check ATAS logs, ensure all DLLs copied correctly
+        - **Web interface not accessible**: Check Windows Firewall settings
+        
+        ### Support
+        - **Documentation**: Check the web interface help sections
+        - **Logs**: OrderEventHub creates detailed logs for troubleshooting
+        - **ATAS Integration**: Verify strategy appears in ATAS Strategies list
+        
+        ## ?? Security Notes
+        
+        - OrderEventHub runs locally (localhost only by default)
+        - API credentials are stored locally and encrypted
+        - No data is transmitted to external servers except target trading platforms
+        
+        ## ?? Version Information
+        
+        - **Version**: $tagName
+        - **Build**: ${{ github.sha }}
+        - **Platform**: .NET 8.0 / Windows
+        - **Components**: ATAS Strategy + Web Application
+        
+        ---
+        
+        For the latest updates and source code, visit: https://github.com/${{ github.repository }}
+        "@ | Out-File -FilePath "$releaseDir/README.md" -Encoding UTF8
+        
+        # Create the release package
+        $zipPath = "$packageName.zip"
+        Compress-Archive -Path "$releaseDir/*" -DestinationPath $zipPath -Force
+        
+        # Output for next steps
+        echo "package_name=$packageName" >> $env:GITHUB_OUTPUT
+        echo "package_path=$zipPath" >> $env:GITHUB_OUTPUT
+        
+        # Show package info
+        echo "Created release package: $zipPath"
+        $size = [math]::Round((Get-Item $zipPath).Length / 1MB, 2)
+        echo "Package size: $size MB"
+    
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        $tagName = "${{ steps.tag.outputs.tag_name }}"
+        
+        $releaseNotes = @"
+        # ?? ATAS Trade Copy System $tagName
+        
+        ## What's Included
+        
+        - **BroadcastOrderEvents**: ATAS strategy for capturing trading events
+        - **OrderEventHub**: Web application for managing trade copying
+        - **Deployment Scripts**: Automated installation helpers
+        - **Documentation**: Complete setup and usage guide
+        
+        ## ?? Installation
+        
+        1. Download ``${{ steps.package.outputs.package_name }}.zip``
+        2. Extract to a folder of your choice
+        3. Run ``deploy.bat`` to install the ATAS strategy
+        4. Run ``start-ordereventhub.bat`` to launch the web interface
+        5. Configure your trading accounts at http://localhost:5000
+        
+        ## ?? Key Features
+        
+        - Real-time order and position synchronization from ATAS
+        - Support for multiple target trading platforms
+        - Web-based configuration interface
+        - Automatic trade copying with customizable rules
+        - Comprehensive logging and error handling
+        
+        ## ?? System Requirements
+        
+        - Windows 10/11
+        - ATAS Platform (for strategy component)
+        - .NET 8.0 Runtime (included with ATAS)
+        - Modern web browser
+        
+        ## ?? Documentation
+        
+        Complete setup and usage instructions are included in the download package. See ``README.md`` for detailed information.
+        
+        ---
+        
+        **Build Information**
+        - Version: $tagName
+        - Commit: ${{ github.sha }}
+        - Built: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+        "@
+        
+        # Save to file for GitHub release
+        $releaseNotes | Out-File -FilePath "release-notes.md" -Encoding UTF8
+        
+        # Also output for GitHub (escape newlines)
+        $encodedNotes = $releaseNotes -replace "`r`n", "%0A" -replace "`n", "%0A"
+        echo "notes<<EOF" >> $env:GITHUB_OUTPUT
+        echo $releaseNotes >> $env:GITHUB_OUTPUT
+        echo "EOF" >> $env:GITHUB_OUTPUT
+    
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.tag_name }}
+        release_name: ATAS Trade Copy System ${{ steps.tag.outputs.tag_name }}
+        body_path: release-notes.md
+        draft: ${{ github.event.inputs.draft || false }}
+        prerelease: ${{ github.event.inputs.prerelease || false }}
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.package.outputs.package_path }}
+        asset_name: ${{ steps.package.outputs.package_name }}.zip
+        asset_content_type: application/zip
+    
+    - name: Upload additional artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts-${{ steps.tag.outputs.tag_name }}
+        path: |
+          publish/
+          release-notes.md
+        retention-days: 90
