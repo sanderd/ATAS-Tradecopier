@@ -158,7 +158,7 @@ public class Startup
         {
             if (env.IsDevelopment())
             {
-                builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com", "http://localhost:5000", "https://localhost:5001")
+                builder.WithOrigins("https://www.topstepx.com", "https://topstepx.com", "http://localhost:15420", "https://localhost:15421")
                     .AllowAnyMethod().AllowAnyHeader().AllowCredentials();
             }
             else

@@ -1,4 +1,4 @@
-# ProjectX Token Caching Implementation
+﻿# ProjectX Token Caching Implementation
 
 ## Overview
 
@@ -159,15 +159,15 @@ Access the testing page at `/Testing/Notifications` when testing features are en
 ### API Testing
 ```bash
 # Get cache status
-curl GET "localhost:5000/api/testing/token-cache/status"
+curl GET "localhost:15420/api/testing/token-cache/status"
 
 # Test token caching
-curl -X POST "localhost:5000/api/testing/token-cache/test" \
+curl -X POST "localhost:15420/api/testing/token-cache/test" \
   -H "Content-Type: application/json" \
   -d '{"apiUrl":"https://api.test.com","apiUser":"testuser","expirationMinutes":60}'
 
 # Clear specific token
-curl -X DELETE "localhost:5000/api/testing/token-cache/clear?apiUrl=https://api.test.com&apiUser=testuser"
+curl -X DELETE "localhost:15420/api/testing/token-cache/clear?apiUrl=https://api.test.com&apiUser=testuser"
 ```
 
 ## Monitoring
