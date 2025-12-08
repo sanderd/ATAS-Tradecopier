@@ -1,4 +1,4 @@
-name: Build and Release
+﻿name: Build and Release
 
 on:
   push:
@@ -143,7 +143,7 @@ jobs:
         1. Run `deploy.bat` to copy the BroadcastOrderEvents files to ATAS
         2. Start ATAS and add the "Broadcast Order Events" strategy to your chart
         3. Run `OrderEventHub/sadnerd.io.ATAS.OrderEventHub.exe`
-        4. Open your browser to http://localhost:5000 to configure the system
+        4. Open your browser to http://localhost:15420 to configure the system
         "@ | Out-File -FilePath "$releaseDir/README.md" -Encoding UTF8
         
         # Compress the release package

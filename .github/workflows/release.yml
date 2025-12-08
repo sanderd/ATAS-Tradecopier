@@ -1,4 +1,4 @@
-name: Create Release Package
+﻿name: Create Release Package
 
 on:
   release:
@@ -115,7 +115,7 @@ jobs:
         echo 1. Start ATAS Platform
         echo 2. Add 'Broadcast Order Events' strategy to your chart
         echo 3. Run OrderEventHub by executing: OrderEventHub\sadnerd.io.ATAS.OrderEventHub.exe
-        echo 4. Open http://localhost:5000 in your browser to configure
+        echo 4. Open http://localhost:15420 in your browser to configure
         echo.
         pause
         "@ | Out-File -FilePath "$releaseDir/deploy.bat" -Encoding ASCII
@@ -125,7 +125,7 @@ jobs:
         @echo off
         echo Starting OrderEventHub...
         echo.
-        echo The web interface will be available at: http://localhost:5000
+        echo The web interface will be available at: http://localhost:15420
         echo Press Ctrl+C to stop the application
         echo.
         cd /d "%~dp0OrderEventHub"
@@ -169,7 +169,7 @@ jobs:
            - Configure server IP (default: 127.0.0.1) and port (default: 35144)
         
         4. **Setup Trade Copying**:
-           - Open http://localhost:5000 in your browser  
+           - Open http://localhost:15420 in your browser  
            - Configure your target trading accounts and copy strategies
         
         ## System Requirements
@@ -181,7 +181,7 @@ jobs:
         
         ## Port Configuration
         
-        - **OrderEventHub Web Interface**: Port 5000 (configurable)
+        - **OrderEventHub Web Interface**: Port 15420 (configurable)
         - **ServiceWire Communication**: Port 35144 (configurable in ATAS strategy)
         
         ## Support Files
@@ -193,7 +193,7 @@ jobs:
         ## Troubleshooting
         
         - Ensure ATAS is closed when running deploy.bat
-        - Check that no firewall is blocking ports 5000 and 35144
+        - Check that no firewall is blocking Port 15420 and 35144
         - Verify .NET 8.0 runtime is installed if you get startup errors
         - Check ATAS logs if the strategy fails to load
         

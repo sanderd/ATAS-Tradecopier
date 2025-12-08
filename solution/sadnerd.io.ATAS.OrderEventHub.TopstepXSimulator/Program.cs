@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 Console.WriteLine("Hello, World!");
 
 var connection = new HubConnectionBuilder()
-    .WithUrl("http://localhost:5000/topstepxhub")
+    .WithUrl("http://localhost:15420/topstepxhub")
     .Build();
 
 connection.Closed += async (error) =>
