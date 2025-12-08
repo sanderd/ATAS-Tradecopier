@@ -1,4 +1,4 @@
-name: Publish Release
+﻿name: Publish Release
 
 on:
   push:
@@ -156,7 +156,7 @@ jobs:
         echo 1. Start ATAS Platform
         echo 2. Add 'Broadcast Order Events' strategy to your chart
         echo 3. Run OrderEventHub: double-click 'start-ordereventhub.bat'
-        echo 4. Open http://localhost:5000 in your browser to configure
+        echo 4. Open http://localhost:15420 in your browser to configure
         echo.
         pause
         "@ | Out-File -FilePath "$releaseDir/deploy.bat" -Encoding ASCII
@@ -169,12 +169,12 @@ jobs:
         echo ========================================
         echo.
         echo The web interface will be available at:
-        echo   http://localhost:5000
+        echo   http://localhost:15420
         echo.
         echo Press Ctrl+C to stop the application
         echo.
         cd /d "%~dp0OrderEventHub"
-        start "" "http://localhost:5000"
+        start "" "http://localhost:15420"
         sadnerd.io.ATAS.OrderEventHub.exe
         pause
         "@ | Out-File -FilePath "$releaseDir/start-ordereventhub.bat" -Encoding ASCII
@@ -198,7 +198,7 @@ jobs:
         ### ?? OrderEventHub (Web Application)
         - **Purpose**: Processes events and manages trade copying
         - **Location**: `OrderEventHub/` folder
-        - **Interface**: Web-based configuration at http://localhost:5000
+        - **Interface**: Web-based configuration at http://localhost:15420
         - **Requirements**: .NET 8.0 Runtime (included with ATAS)
         
         ## ?? Quick Start Guide
@@ -217,7 +217,7 @@ jobs:
         3. Configure connection settings (default: IP 127.0.0.1, Port 35144)
         
         ### Step 4: Configure Trade Copying
-        1. Open http://localhost:5000 in your browser
+        1. Open http://localhost:15420 in your browser
         2. Set up your target trading accounts (TopstepX, etc.)
         3. Create copy strategies linking ATAS accounts to target accounts
         4. Start trading - copies will happen automatically!
@@ -228,7 +228,7 @@ jobs:
         - **Runtime**: .NET 8.0 (usually included with ATAS)
         - **ATAS**: ATAS Platform (for BroadcastOrderEvents)
         - **Browser**: Any modern web browser (for configuration)
-        - **Network**: Ports 5000 (web interface) and 35144 (internal communication)
+        - **Network**: Port 15420 (web interface) and 35144 (internal communication)
         
         ## ?? Package Contents
         
@@ -251,7 +251,7 @@ jobs:
         
         ### Common Issues
         - **"ATAS Strategies directory not found"**: Install and run ATAS at least once
-        - **"Port already in use"**: Close other applications using ports 5000 or 35144
+        - **"Port 15420 or 35144
         - **Strategy not loading in ATAS**: Check ATAS logs, ensure all DLLs copied correctly
         - **Web interface not accessible**: Check Windows Firewall settings
         
@@ -312,7 +312,7 @@ jobs:
         2. Extract to a folder of your choice
         3. Run ``deploy.bat`` to install the ATAS strategy
         4. Run ``start-ordereventhub.bat`` to launch the web interface
-        5. Configure your trading accounts at http://localhost:5000
+        5. Configure your trading accounts at http://localhost:15420
         
         ## ?? Key Features
         
