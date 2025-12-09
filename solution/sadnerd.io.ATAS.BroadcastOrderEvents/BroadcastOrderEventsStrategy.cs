@@ -84,8 +84,10 @@ namespace sadnerd.io.ATAS.BroadcastOrderEvents
             }
         }
 
-        public BroadcastOrderEventsStrategy()
+        // Constructor that matches ATAS expectations - must call base with useCandles parameter
+        public BroadcastOrderEventsStrategy() : base(useCandles: false)
         {
+            // Initialize fields that can't be initialized inline
         }
 
         private void OnPortfolioSelected(Portfolio portfolio)

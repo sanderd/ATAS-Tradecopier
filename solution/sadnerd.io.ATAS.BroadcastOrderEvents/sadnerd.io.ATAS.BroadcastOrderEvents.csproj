@@ -56,6 +56,12 @@
 	    <ExcludeAssets>runtime;contentFiles;analyzers;build;native</ExcludeAssets>
 	    <Private>false</Private>
 	  </ProjectReference>
+	  <ProjectReference Include="..\ReferenceAssemblies\ATAS.Indicators\ATAS.Indicators.csproj">
+	    <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	    <IncludeAssets>compile</IncludeAssets>
+	    <ExcludeAssets>runtime;contentFiles;analyzers;build;native</ExcludeAssets>
+	    <Private>false</Private>
+	  </ProjectReference>
 	  <ProjectReference Include="..\ReferenceAssemblies\ATAS.Strategies\ATAS.Strategies.csproj">
 	    <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
 	    <IncludeAssets>compile</IncludeAssets>
@@ -73,9 +79,11 @@
 	<!-- Explicitly exclude reference assemblies from publish output in CI builds -->
 	<ItemGroup Condition="$(DefineConstants.Contains('CI_BUILD'))">
 	  <Content Remove="$(OutputPath)ATAS.DataFeedsCore.dll" />
+	  <Content Remove="$(OutputPath)ATAS.Indicators.dll" />
 	  <Content Remove="$(OutputPath)ATAS.Strategies.dll" />
 	  <Content Remove="$(OutputPath)OFT.Attributes.dll" />
 	  <None Remove="$(OutputPath)ATAS.DataFeedsCore.dll" />
+	  <None Remove="$(OutputPath)ATAS.Indicators.dll" />
 	  <None Remove="$(OutputPath)ATAS.Strategies.dll" />
 	  <None Remove="$(OutputPath)OFT.Attributes.dll" />
 	</ItemGroup>

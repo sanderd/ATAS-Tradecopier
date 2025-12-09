@@ -22,6 +22,40 @@ using Serilog;
 
 namespace sadnerd.io.ATAS.OrderEventHub;
 
+// Database migration service that runs before other hosted services
+public class DatabaseMigrationService : IHostedService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<DatabaseMigrationService> _logger;
+
+    public DatabaseMigrationService(IServiceProvider serviceProvider, ILogger<DatabaseMigrationService> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Starting database migration...");
+        
+        using var scope = _serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
+        
+        try
+        {
+            await dbContext.Database.MigrateAsync(cancellationToken);
+            _logger.LogInformation("Database migration completed successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Database migration failed");
+            throw; // This will prevent the application from starting
+        }
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+}
+
 public class Startup
 {
     public IConfiguration Configuration { get; }
@@ -40,6 +74,11 @@ public class Startup
         services.Configure<ServiceWireOptions>(Configuration.GetSection(ServiceWireOptions.SectionName));
 
         services.AddSignalR();
+        
+        // Add database migration service FIRST - it will run before other hosted services
+        services.AddHostedService<DatabaseMigrationService>();
+        
+        // Add other hosted services AFTER migration service
         services.AddHostedService<ServiceWireWorker>();
         services.AddHostedService<CopyStrategyInitializationService>();
         services.AddCors();
@@ -199,11 +238,7 @@ public class Startup
             }
         }
 
-        // Apply migrations and ensure database is created
-        using (var scope = app.ApplicationServices.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<OrderEventHubDbContext>();
-            dbContext.Database.Migrate();
-        }
+        // Database migration is now handled by DatabaseMigrationService hosted service
+        // which runs before other hosted services start
     }
 }

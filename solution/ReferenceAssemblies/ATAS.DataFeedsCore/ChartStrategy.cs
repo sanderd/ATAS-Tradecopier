@@ -2,25 +2,11 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace ATAS.DataFeedsCore
 {
-    // Core Strategy Base Class
-    public abstract class ChartStrategy
-    {
-        public TradingManager TradingManager { get; protected set; } = new TradingManager();
-        
-        protected virtual void OnInitialize() { }
-        protected virtual void OnStarted() { }
-        protected virtual void OnSuspended() { }
-        protected virtual void OnStopping() { }
-        protected virtual void OnCalculate(int bar, decimal value) { }
-        protected virtual void OnNewOrder(Order order) { }
-        protected virtual void OnOrderChanged(Order order) { }
-        protected virtual void OnPositionChanged(Position position) { }
-    }
-
-    // Order Types and Enums
+    // Order Types and Enums - what the mappers expect
     public enum OrderTypes
     {
         Unknown = 0,
@@ -47,13 +33,13 @@ namespace ATAS.DataFeedsCore
         Cancelled = 6,
         Rejected = 7,
         Expired = 8,
-        Active = 9,      // Add missing enum values
+        Active = 9,
         Done = 10,
         Failed = 11,
         None = 12
     }
 
-    // Order Class
+    // Order Class - Match what the working mappers expect (NOT the decompiled record version)
     public class Order
     {
         public string AccountID { get; set; } = string.Empty;
@@ -81,7 +67,7 @@ namespace ATAS.DataFeedsCore
     {
         public string SecurityId { get; set; } = string.Empty;
         public decimal Volume { get; set; }
-        public string AccountID { get; set; } = string.Empty;     // Add missing properties
+        public string AccountID { get; set; } = string.Empty;
         public decimal AveragePrice { get; set; }
         public decimal OpenVolume { get; set; }
         
@@ -101,15 +87,5 @@ namespace ATAS.DataFeedsCore
     public class Security
     {
         public string SecurityId { get; set; } = string.Empty;
-    }
-
-    // Trading Manager
-    public class TradingManager
-    {
-        public Portfolio? Portfolio { get; set; }
-        public Security? Security { get; set; }
-        
-        public event Action<Portfolio>? PortfolioSelected;
-        public event Action<Security>? SecuritySelected;
     }
 }

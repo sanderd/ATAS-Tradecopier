@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>ATAS.Strategies</AssemblyName>
-    <RootNamespace>ATAS.Strategies</RootNamespace>
+    <AssemblyName>ATAS.Indicators</AssemblyName>
+    <RootNamespace>ATAS.Indicators</RootNamespace>
     
     <!-- Mark as reference assembly and exclude from publish -->
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
@@ -18,10 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ATAS.DataFeedsCore\ATAS.DataFeedsCore.csproj">
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\ATAS.Indicators\ATAS.Indicators.csproj">
       <ExcludeAssets>runtime</ExcludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
