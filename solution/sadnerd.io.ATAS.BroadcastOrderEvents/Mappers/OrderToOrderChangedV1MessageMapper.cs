@@ -19,7 +19,7 @@ public class OrderToOrderChangedV1MessageMapper : IOrderToOrderChangedV1MessageM
             TriggerPrice: order.TriggerPrice,
             Status: OrderStatesToOrderStatusMapper.Map(order.State),
             Canceled: order.Canceled,
-            IsReduceOnly: order.ExtendedOptions?.ToString().Contains("ReduceOnly") == true, // NOTE: Yeah... Didn't find a way to access the flags directly...
+            IsReduceOnly: order.ExtendedOptions?.ToString()?.Contains("ReduceOnly") == true,
             Comment: order.Comment
         );
     }
